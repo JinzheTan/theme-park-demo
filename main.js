@@ -5,19 +5,37 @@ const minimapCtx = minimapCanvas.getContext("2d");
 
 const toolGrid = document.getElementById("toolGrid");
 const rideStatusList = document.getElementById("rideStatusList");
+const insightList = document.getElementById("insightList");
 const eventLog = document.getElementById("eventLog");
 const headlineMetrics = document.getElementById("headlineMetrics");
 const hoverCard = document.getElementById("hoverCard");
 const floatingTools = document.getElementById("floatingTools");
+const speedControls = document.getElementById("speedControls");
+const centerCameraButton = document.getElementById("centerCameraButton");
 
 const GRID_WIDTH = 28;
 const GRID_HEIGHT = 28;
 const TILE_WIDTH = 104;
 const TILE_HEIGHT = 52;
 const CAMERA_SPEED = 720;
+const CAMERA_PADDING = 120;
 const MAX_EVENTS = 9;
 const GATE_POSITION = { x: 14, y: 25 };
 const SPAWN_TILE = { x: 14, y: 24 };
+const PROTECTED_PATH_KEYS = new Set([tileKey(SPAWN_TILE.x, SPAWN_TILE.y)]);
+
+const SHORTCUT_TO_TOOL = {
+  1: "path",
+  2: "carousel",
+  3: "wheel",
+  4: "coaster",
+  5: "food",
+  6: "service",
+  7: "tree",
+  8: "flowerbed",
+  9: "fountain",
+  0: "remove",
+};
 
 const GUEST_COLORS = ["#f7d17b", "#8fd8e2", "#f3a16b", "#f47a93", "#8fd7aa", "#f4ebc9"];
 
@@ -206,8 +224,12 @@ const state = {
   totalUpkeep: 0,
   averageHappiness: 82,
   cleanliness: 100,
+  uiClock: 0,
+  uiDirty: true,
+  timeScale: 1,
   reachableFromGate: new Set(),
   pathTiles: [],
+  orderedTiles: [],
   assets: {},
   nextObjectId: 1,
   nextGuestId: 1,
@@ -215,24 +237,22 @@ const state = {
     x: 0,
     y: 0,
     tile: null,
+    inside: false,
     isPainting: false,
     isPanning: false,
   },
   keys: new Set(),
   camera: {
     x: 0,
-    y: 96,
-    zoom: 0.82,
+    y: -280,
+    zoom: 0.92,
   },
+  cameraTouched: false,
   feed: [],
 };
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t;
 }
 
 function rand(min, max) {
@@ -283,6 +303,58 @@ function screenToTile(screenX, screenY) {
   return { x: Math.floor(x), y: Math.floor(y) };
 }
 
+function markUiDirty() {
+  state.uiDirty = true;
+}
+
+function isObjectOperational(object) {
+  return Boolean(
+    object?.entry && state.reachableFromGate.has(tileKey(object.entry.x, object.entry.y)),
+  );
+}
+
+function clampCamera() {
+  const minWorldX = -(GRID_HEIGHT - 1) * (TILE_WIDTH / 2);
+  const maxWorldX = (GRID_WIDTH - 1) * (TILE_WIDTH / 2);
+  const minWorldY = -260;
+  const maxWorldY = (GRID_WIDTH + GRID_HEIGHT - 2) * (TILE_HEIGHT / 2) + 160;
+
+  const minX = canvas.clientWidth - CAMERA_PADDING - maxWorldX * state.camera.zoom;
+  const maxX = CAMERA_PADDING - minWorldX * state.camera.zoom;
+  const minY = canvas.clientHeight - CAMERA_PADDING - maxWorldY * state.camera.zoom;
+  const maxY = CAMERA_PADDING - minWorldY * state.camera.zoom;
+
+  state.camera.x = minX > maxX ? (minX + maxX) / 2 : clamp(state.camera.x, minX, maxX);
+  state.camera.y = minY > maxY ? (minY + maxY) / 2 : clamp(state.camera.y, minY, maxY);
+}
+
+function setSelectedTool(toolId) {
+  if (!TOOLS.some((tool) => tool.id === toolId)) {
+    return;
+  }
+  state.selectedTool = toolId;
+  renderToolButtons();
+  markUiDirty();
+  updateHoverCard();
+}
+
+function setSimulationSpeed(nextSpeed) {
+  state.timeScale = nextSpeed;
+  renderSpeedButtons();
+  markUiDirty();
+}
+
+function focusCameraOn(tileX, tileY) {
+  const focusZoom = canvas.clientWidth < 900 ? 0.76 : 0.92;
+  state.camera.zoom = focusZoom;
+  const worldX = (tileX - tileY) * (TILE_WIDTH / 2);
+  const worldY = (tileX + tileY) * (TILE_HEIGHT / 2);
+
+  state.camera.x = canvas.clientWidth * 0.41 - worldX * state.camera.zoom;
+  state.camera.y = canvas.clientHeight * 0.44 - worldY * state.camera.zoom;
+  clampCamera();
+}
+
 function createGrid() {
   state.tiles = Array.from({ length: GRID_HEIGHT }, (_, y) =>
     Array.from({ length: GRID_WIDTH }, (_, x) => ({
@@ -306,6 +378,8 @@ function createGrid() {
       tile.terrain = "water";
     }
   }
+
+  state.orderedTiles = state.tiles.flat().sort((a, b) => a.x + a.y - (b.x + b.y));
 }
 
 function markPath(x, y) {
@@ -326,6 +400,7 @@ function seedPark() {
     [12, 23], [13, 23], [14, 23], [15, 23], [16, 23],
     [13, 22], [14, 22], [15, 22], [14, 21], [14, 20], [14, 19], [14, 18],
     [12, 20], [13, 20], [15, 20], [16, 20], [17, 20],
+    [17, 21],
     [11, 19], [12, 19], [13, 19], [15, 19], [16, 19], [17, 19],
     [10, 18], [11, 18], [12, 18], [16, 18], [17, 18], [18, 18],
   ];
@@ -382,6 +457,7 @@ function addObject(type, x, y, options = {}) {
   }
 
   refreshParkGraph();
+  markUiDirty();
   return object;
 }
 
@@ -406,6 +482,7 @@ function removeObject(object) {
   state.money += Math.round(object.stats.cost * 0.55);
   refreshParkGraph();
   addEvent("Layout changed", `${object.label} was removed and guests are rerouting.`);
+  markUiDirty();
   return true;
 }
 
@@ -447,6 +524,8 @@ function refreshParkGraph() {
   for (const object of state.objects.values()) {
     object.entry = findObjectEntry(object);
   }
+
+  markUiDirty();
 }
 
 function findObjectEntry(object) {
@@ -486,6 +565,9 @@ function canPlaceTool(toolId, x, y) {
       return { ok: true };
     }
     if (tile.path) {
+      if (PROTECTED_PATH_KEYS.has(tileKey(x, y))) {
+        return { ok: false, reason: "Guests need the gate entry path" };
+      }
       return { ok: true };
     }
     return { ok: false, reason: "Nothing to clear here" };
@@ -543,6 +625,7 @@ function useToolAt(x, y) {
     if (placed) {
       state.money -= 6;
       refreshParkGraph();
+      markUiDirty();
       return true;
     }
     return false;
@@ -559,6 +642,7 @@ function useToolAt(x, y) {
       state.money += 3;
       refreshParkGraph();
       addEvent("Path updated", "Guests are testing the new circulation layout.");
+      markUiDirty();
       return true;
     }
     return false;
@@ -662,10 +746,10 @@ function createGuest() {
 
 function chooseGuestDestination(guest) {
   const accessibleObjects = [...state.objects.values()].filter((object) => {
-    if (!object.entry || object.type === "gate") {
+    if (object.type === "gate" || !isObjectOperational(object)) {
       return false;
     }
-    return state.reachableFromGate.has(tileKey(object.entry.x, object.entry.y));
+    return true;
   });
 
   const rides = accessibleObjects.filter((object) => object.category === "ride");
@@ -734,6 +818,24 @@ function manhattan(a, b) {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
+function scenicValueAt(x, y) {
+  let score = 0;
+  for (let dy = -2; dy <= 2; dy += 1) {
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const tile = getTile(x + dx, y + dy);
+      if (!tile?.objectId) {
+        continue;
+      }
+      const object = state.objects.get(tile.objectId);
+      if (!object) {
+        continue;
+      }
+      score += (object.stats.scenery ?? 0) / (Math.abs(dx) + Math.abs(dy) + 1);
+    }
+  }
+  return score;
+}
+
 function joinQueue(guest, object) {
   if (!object.entry) {
     guest.state = "thinking";
@@ -764,11 +866,17 @@ function updateGuests(deltaTime) {
     guest.hunger = clamp(guest.hunger + deltaTime * 1.8, 0, 100);
     guest.patience = clamp(guest.patience - deltaTime * 0.55, 0, 100);
     guest.litterClock -= deltaTime;
+    guest.happiness = clamp(
+      guest.happiness - deltaTime * (guest.hunger > 72 ? 0.9 : 0.22) - deltaTime * (100 - state.cleanliness) * 0.01,
+      0,
+      100,
+    );
 
     if (guest.litterClock <= 0) {
       const tile = getTile(Math.round(guest.x), Math.round(guest.y));
-      if (tile?.path && Math.random() < 0.18 + (100 - state.cleanliness) / 180) {
+      if (tile?.path && Math.random() < 0.07 + (100 - state.cleanliness) / 320) {
         tile.litter = clamp(tile.litter + 1, 0, 4);
+        markUiDirty();
       }
       guest.litterClock = rand(6, 11);
     }
@@ -810,6 +918,10 @@ function updateGuests(deltaTime) {
         guest.x = next.x;
         guest.y = next.y;
         guest.route.shift();
+        const sceneryBoost = scenicValueAt(Math.round(guest.x), Math.round(guest.y));
+        if (sceneryBoost > 0) {
+          guest.happiness = clamp(guest.happiness + sceneryBoost * 0.008, 0, 100);
+        }
       } else {
         guest.x += (stepX / distance) * move;
         guest.y += (stepY / distance) * move;
@@ -858,15 +970,19 @@ function updateObjects(deltaTime) {
     }
 
     if (object.category === "service") {
+      if (!isObjectOperational(object)) {
+        object.cycleRemaining = 0;
+        continue;
+      }
       object.cycleRemaining -= deltaTime;
       if (object.cycleRemaining <= 0) {
         cleanAround(object);
-        object.cycleRemaining = 5.5;
+        object.cycleRemaining = 4.2;
       }
       continue;
     }
 
-    if (!object.entry) {
+    if (!isObjectOperational(object)) {
       continue;
     }
 
@@ -947,6 +1063,7 @@ function cleanAround(object) {
   }
   if (cleaned > 0) {
     addEvent("Crew sweep", `${object.label} cleared ${cleaned} litter piles nearby.`);
+    markUiDirty();
   }
 }
 
@@ -965,17 +1082,35 @@ function updateEconomy(deltaTime) {
     (sum, object) => sum + (object.stats.scenery ?? 0),
     0,
   );
-  const cap = clamp(12 + rideCount * 8 + Math.floor(sceneryScore / 4), 12, 90);
+  const cap = clamp(
+    10 +
+      rideCount * 9 +
+      Math.floor(sceneryScore / 5) +
+      Math.round(state.cleanliness * 0.08) +
+      Math.round(state.averageHappiness * 0.06),
+    12,
+    110,
+  );
 
   if (state.guestSpawnTimer <= 0 && state.guests.length < cap) {
     createGuest();
-    state.guestSpawnTimer = clamp(4.4 - rideCount * 0.28 - sceneryScore * 0.012, 1.2, 4.6);
+    state.guestSpawnTimer = clamp(
+      4.5 -
+        rideCount * 0.32 -
+        sceneryScore * 0.01 +
+        Math.max(0, 58 - state.cleanliness) * 0.015,
+      1.2,
+      4.8,
+    );
+    markUiDirty();
   }
 }
 
 function computeParkMetrics() {
   const totalLitter = state.tiles.flat().reduce((sum, tile) => sum + tile.litter, 0);
-  const serviceCount = [...state.objects.values()].filter((object) => object.category === "service").length;
+  const serviceCount = [...state.objects.values()].filter(
+    (object) => object.category === "service" && isObjectOperational(object),
+  ).length;
   const sceneryScore = [...state.objects.values()].reduce(
     (sum, object) => sum + (object.stats.scenery ?? 0),
     0,
@@ -989,7 +1124,7 @@ function computeParkMetrics() {
     : 84;
 
   state.cleanliness = Math.round(
-    clamp(100 - totalLitter * 5 + serviceCount * 8 + sceneryScore * 0.15, 8, 100),
+    clamp(100 - totalLitter * 3.2 + serviceCount * 12 + sceneryScore * 0.14, 8, 100),
   );
 
   state.growthScore = Math.round(
@@ -1025,7 +1160,73 @@ function addEvent(title, description) {
     description,
   });
   state.feed = state.feed.slice(0, MAX_EVENTS);
-  renderPanels();
+  markUiDirty();
+}
+
+function buildInsights() {
+  const disconnected = [...state.objects.values()].filter(
+    (object) => object.type !== "gate" && object.entry && !isObjectOperational(object),
+  );
+  const crowded = [...state.objects.values()].filter(
+    (object) =>
+      (object.category === "ride" || object.category === "facility") &&
+      object.queue.length >= Math.ceil(object.stats.queueLimit * 0.65),
+  );
+  const insights = [];
+
+  if (state.money < 250) {
+    insights.push({
+      tone: "warn",
+      title: "Cash is running thin",
+      detail: "Slow expansion for a moment or add another revenue attraction before upkeep bites.",
+    });
+  }
+
+  if (state.cleanliness < 70) {
+    insights.push({
+      tone: "warn",
+      title: "Cleanliness is slipping",
+      detail: "Add a care hub near the busiest branch or reduce guest density with alternate routes.",
+    });
+  }
+
+  if (crowded.length) {
+    insights.push({
+      tone: "warn",
+      title: `${crowded[0].label} is congested`,
+      detail: "High queues are lowering patience. Add nearby alternatives or branch the pathing.",
+    });
+  }
+
+  if (disconnected.length) {
+    insights.push({
+      tone: "warn",
+      title: "An attraction is disconnected",
+      detail: `${disconnected[0].label} has a path beside it, but guests still cannot reach that route from the gate.`,
+    });
+  }
+
+  if (!insights.length) {
+    insights.push({
+      tone: "good",
+      title: "Operations are stable",
+      detail: "Guest flow, coverage, and attraction demand are currently in a healthy range.",
+    });
+  }
+
+  insights.push({
+    tone: "good",
+    title: `Week ${state.day} outlook`,
+    detail: `${growthLabel()} park with ${state.guests.length} guests on site and ${state.guestsServed} completed experiences.`,
+  });
+
+  return insights.slice(0, 4);
+}
+
+function renderSpeedButtons() {
+  for (const button of speedControls.querySelectorAll("[data-speed]")) {
+    button.classList.toggle("active", Number(button.dataset.speed) === state.timeScale);
+  }
 }
 
 function renderPanels() {
@@ -1042,10 +1243,14 @@ function renderPanels() {
     .map((object) => {
       let line = "Decorative";
       let statusClass = "status-chip";
+      const operational = isObjectOperational(object);
 
       if (object.category === "ride" || object.category === "facility") {
         if (!object.entry) {
           line = "Missing path connection";
+          statusClass = "status-chip warn";
+        } else if (!operational) {
+          line = "Disconnected from gate";
           statusClass = "status-chip warn";
         } else if (object.riders.length) {
           line = `Running ${object.riders.length} guests / ${object.stats.capacity}`;
@@ -1055,7 +1260,12 @@ function renderPanels() {
       }
 
       if (object.category === "service") {
-        line = `Cleaning radius ${object.stats.cleanRadius} tiles`;
+        line = operational
+          ? `Cleaning radius ${object.stats.cleanRadius} tiles`
+          : "Offline: no guest access";
+        if (!operational) {
+          statusClass = "status-chip warn";
+        }
       }
 
       return `
@@ -1066,6 +1276,17 @@ function renderPanels() {
         </article>
       `;
     })
+    .join("");
+
+  insightList.innerHTML = buildInsights()
+    .map(
+      (insight) => `
+        <article class="insight-item ${insight.tone}">
+          <strong>${insight.title}</strong>
+          <span>${insight.detail}</span>
+        </article>
+      `,
+    )
     .join("");
 
   eventLog.innerHTML = state.feed
@@ -1092,10 +1313,12 @@ function renderPanels() {
       <span>${state.guestsServed} guest experiences completed</span>
     </div>
     <div class="floating-tool">
-      <strong>${state.cleanliness}% clean</strong>
-      <span>Litter and service coverage update live</span>
+      <strong>${state.timeScale === 0 ? "Paused" : `${state.timeScale}x speed`}</strong>
+      <span>${state.cleanliness}% clean with live service coverage</span>
     </div>
   `;
+
+  state.uiDirty = false;
 }
 
 function renderToolButtons() {
@@ -1111,17 +1334,14 @@ function renderToolButtons() {
 
   for (const button of toolGrid.querySelectorAll("[data-tool]")) {
     button.addEventListener("click", () => {
-      state.selectedTool = button.dataset.tool;
-      renderToolButtons();
-      renderPanels();
-      updateHoverCard();
+      setSelectedTool(button.dataset.tool);
     });
   }
 }
 
 function updateHoverCard() {
   const tileCoord = state.pointer.tile;
-  if (!tileCoord || !inBounds(tileCoord.x, tileCoord.y)) {
+  if (!state.pointer.inside || !tileCoord || !inBounds(tileCoord.x, tileCoord.y)) {
     hoverCard.classList.remove("visible");
     return;
   }
@@ -1130,10 +1350,21 @@ function updateHoverCard() {
   const object = tile.objectId ? state.objects.get(tile.objectId) : null;
   const verdict = canPlaceTool(state.selectedTool, tileCoord.x, tileCoord.y);
   const terrain = tile.terrain === "water" ? "Water" : tile.path ? "Path" : "Grass";
+  const objectDetail = object
+    ? object.category === "ride" || object.category === "facility"
+      ? isObjectOperational(object)
+        ? `Queue ${object.queue.length}, riders ${object.riders.length}`
+        : "Disconnected from main park path"
+      : object.category === "service"
+        ? isObjectOperational(object)
+          ? "Staffed and active"
+          : "Placed, but staff cannot reach it"
+        : object.category
+    : null;
 
   hoverCard.innerHTML = `
     <strong>${object?.label ?? terrain} · ${tileCoord.x}, ${tileCoord.y}</strong>
-    <span>${object ? object.category : tile.litter ? `${tile.litter} litter pile${tile.litter === 1 ? "" : "s"}` : terrain === "Grass" ? "Buildable tile" : "Scenic water edge"}</span>
+    <span>${objectDetail ?? (tile.litter ? `${tile.litter} litter pile${tile.litter === 1 ? "" : "s"}` : terrain === "Grass" ? "Buildable tile" : "Scenic water edge")}</span>
     <span>${verdict.ok ? "Ready for placement" : verdict.reason}</span>
   `;
   hoverCard.classList.add("visible");
@@ -1363,26 +1594,37 @@ function renderMinimap() {
     minimapCtx.fillStyle = "#fff4d8";
     minimapCtx.fillRect(guest.x * scaleX, guest.y * scaleY, 2, 2);
   }
+
+  const topLeft = screenToTile(0, 0);
+  const bottomRight = screenToTile(canvas.clientWidth, canvas.clientHeight);
+  const width = (bottomRight.x - topLeft.x) * scaleX;
+  const height = (bottomRight.y - topLeft.y) * scaleY;
+  minimapCtx.strokeStyle = "rgba(249, 243, 220, 0.9)";
+  minimapCtx.lineWidth = 2;
+  minimapCtx.strokeRect(topLeft.x * scaleX, topLeft.y * scaleY, width, height);
 }
 
 function render() {
   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
   drawBackdrop();
 
-  const orderedTiles = state.tiles.flat().sort((a, b) => a.x + a.y - (b.x + b.y));
-  for (const tile of orderedTiles) {
+  const guestsByTile = new Map();
+  for (const guest of state.guests) {
+    const key = tileKey(Math.round(guest.x), Math.round(guest.y));
+    const entries = guestsByTile.get(key) ?? [];
+    entries.push(guest);
+    guestsByTile.set(key, entries);
+  }
+
+  for (const tile of state.orderedTiles) {
     drawTile(tile);
     const object = tile.objectId ? state.objects.get(tile.objectId) : null;
     if (object) {
       drawObject(object);
     }
 
-    for (const guest of state.guests) {
-      const roundedX = Math.round(guest.x);
-      const roundedY = Math.round(guest.y);
-      if (roundedX === tile.x && roundedY === tile.y) {
-        drawGuest(guest);
-      }
+    for (const guest of guestsByTile.get(tileKey(tile.x, tile.y)) ?? []) {
+      drawGuest(guest);
     }
   }
 
@@ -1427,18 +1669,26 @@ function updateCamera(deltaTime) {
 
   state.camera.x += moveX * CAMERA_SPEED * deltaTime;
   state.camera.y += moveY * CAMERA_SPEED * deltaTime;
+  clampCamera();
 }
 
 function gameLoop(timestamp) {
-  const deltaTime = clamp((timestamp - (gameLoop.lastTime ?? timestamp)) / 1000, 0, 0.033);
+  const realDeltaTime = clamp((timestamp - (gameLoop.lastTime ?? timestamp)) / 1000, 0, 0.033);
   gameLoop.lastTime = timestamp;
+  const simDeltaTime = realDeltaTime * state.timeScale;
 
-  updateCamera(deltaTime);
-  updateEconomy(deltaTime);
-  updateGuests(deltaTime);
-  updateObjects(deltaTime);
+  updateCamera(realDeltaTime);
+  if (simDeltaTime > 0) {
+    updateEconomy(simDeltaTime);
+    updateGuests(simDeltaTime);
+    updateObjects(simDeltaTime);
+  }
   computeParkMetrics();
-  renderPanels();
+  state.uiClock += realDeltaTime;
+  if (state.uiDirty || state.uiClock >= 0.2) {
+    state.uiClock = 0;
+    renderPanels();
+  }
   render();
 
   requestAnimationFrame(gameLoop);
@@ -1453,6 +1703,8 @@ function handlePointerMove(event) {
   if (state.pointer.isPanning) {
     state.camera.x += event.movementX;
     state.camera.y += event.movementY;
+    state.cameraTouched = true;
+    clampCamera();
   }
 
   if (state.pointer.isPainting && (state.selectedTool === "path" || state.selectedTool === "remove")) {
@@ -1482,7 +1734,6 @@ function handlePointerDown(event) {
   }
 
   useToolAt(state.pointer.tile.x, state.pointer.tile.y);
-  renderToolButtons();
   updateHoverCard();
 }
 
@@ -1503,29 +1754,81 @@ function resizeCanvas() {
   minimapCanvas.height = minimapRect.height * dpr;
   minimapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  state.camera.x = canvas.clientWidth / 2;
+  if (!state.cameraTouched) {
+    focusCameraOn(14, 22);
+  } else {
+    clampCamera();
+  }
 }
 
 function bindEvents() {
   canvas.addEventListener("contextmenu", (event) => event.preventDefault());
+  canvas.addEventListener("pointerenter", () => {
+    state.pointer.inside = true;
+  });
+  canvas.addEventListener("pointerleave", () => {
+    state.pointer.inside = false;
+    hoverCard.classList.remove("visible");
+  });
   canvas.addEventListener("pointermove", handlePointerMove);
   canvas.addEventListener("pointerdown", handlePointerDown);
   window.addEventListener("pointerup", handlePointerUp);
 
   canvas.addEventListener("wheel", (event) => {
     event.preventDefault();
+    const pointerX = state.pointer.x || canvas.clientWidth * 0.5;
+    const pointerY = state.pointer.y || canvas.clientHeight * 0.5;
+    const worldX = (pointerX - state.camera.x) / state.camera.zoom;
+    const worldY = (pointerY - state.camera.y) / state.camera.zoom;
     const nextZoom = clamp(state.camera.zoom - event.deltaY * 0.0008, 0.46, 1.32);
-    const tileBeforeZoom = screenToTile(state.pointer.x, state.pointer.y);
     state.camera.zoom = nextZoom;
-    const tileAfterZoom = screenToTile(state.pointer.x, state.pointer.y);
-    if (tileBeforeZoom && tileAfterZoom) {
-      state.camera.x += (tileAfterZoom.x - tileBeforeZoom.x) * TILE_WIDTH * 0.22;
-      state.camera.y += (tileAfterZoom.y - tileBeforeZoom.y) * TILE_HEIGHT * 0.22;
-    }
+    state.camera.x = pointerX - worldX * state.camera.zoom;
+    state.camera.y = pointerY - worldY * state.camera.zoom;
+    state.cameraTouched = true;
+    clampCamera();
   }, { passive: false });
 
+  minimapCanvas.addEventListener("pointerdown", (event) => {
+    const rect = minimapCanvas.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * GRID_WIDTH;
+    const y = ((event.clientY - rect.top) / rect.height) * GRID_HEIGHT;
+    focusCameraOn(x, y);
+    state.cameraTouched = true;
+  });
+
+  centerCameraButton.addEventListener("click", () => {
+    focusCameraOn(14, 22);
+    state.cameraTouched = false;
+  });
+
+  for (const button of speedControls.querySelectorAll("[data-speed]")) {
+    button.addEventListener("click", () => {
+      setSimulationSpeed(Number(button.dataset.speed));
+    });
+  }
+
   window.addEventListener("keydown", (event) => {
-    state.keys.add(event.key.toLowerCase());
+    const key = event.key.toLowerCase();
+
+    if (SHORTCUT_TO_TOOL[key]) {
+      setSelectedTool(SHORTCUT_TO_TOOL[key]);
+      return;
+    }
+    if (key === "c") {
+      focusCameraOn(14, 22);
+      state.cameraTouched = false;
+      return;
+    }
+    if (key === " ") {
+      event.preventDefault();
+      setSimulationSpeed(state.timeScale === 0 ? 1 : 0);
+      return;
+    }
+
+    state.keys.add(key);
+    if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
+      state.cameraTouched = true;
+    }
   });
 
   window.addEventListener("keyup", (event) => {
@@ -1540,11 +1843,27 @@ async function bootstrap() {
   seedPark();
   await loadAssets();
   renderToolButtons();
+  renderSpeedButtons();
   bindEvents();
   resizeCanvas();
   computeParkMetrics();
+  renderPanels();
   addEvent("Park open", "Wonderloop Park is ready for new paths, rides, and scenic upgrades.");
   addEvent("Starter layout", "The opening plaza includes a carousel, food, and care coverage.");
+  window.__wonderloop = {
+    state,
+    useToolAt,
+    canPlaceTool,
+    screenToTile,
+    tileToScreen,
+    focusCameraOn,
+    setTool(toolId) {
+      setSelectedTool(toolId);
+    },
+    setSpeed(speed) {
+      setSimulationSpeed(speed);
+    },
+  };
   requestAnimationFrame(gameLoop);
 }
 

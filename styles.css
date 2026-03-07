@@ -160,6 +160,16 @@ img {
   max-width: min(520px, calc(100% - 36px));
 }
 
+.action-bar {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 2;
+}
+
 .hover-card,
 .controls-card {
   position: absolute;
@@ -170,7 +180,7 @@ img {
 }
 
 .hover-card {
-  top: 18px;
+  top: 72px;
   left: 18px;
   min-width: 210px;
   display: none;
@@ -197,6 +207,39 @@ img {
   top: 18px;
   right: 18px;
   text-align: right;
+}
+
+.action-button,
+.speed-button {
+  appearance: none;
+  border: 1px solid rgba(255, 245, 219, 0.14);
+  background: rgba(4, 17, 22, 0.84);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.83rem;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.action-button:hover,
+.speed-button:hover,
+.speed-button.active {
+  border-color: rgba(240, 200, 111, 0.52);
+  background: rgba(240, 200, 111, 0.12);
+  transform: translateY(-1px);
+}
+
+.speed-controls {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(4, 17, 22, 0.78);
+  border: 1px solid rgba(255, 245, 219, 0.12);
 }
 
 .sidebar {
@@ -286,7 +329,8 @@ img {
 }
 
 .ride-status-list,
-.event-log {
+.event-log,
+.insight-list {
   display: grid;
   gap: 10px;
   max-height: 280px;
@@ -296,7 +340,8 @@ img {
 
 .ride-card,
 .event-item,
-.floating-tool {
+.floating-tool,
+.insight-item {
   border-radius: 18px;
   border: 1px solid rgba(255, 245, 219, 0.1);
   background: rgba(255, 249, 231, 0.05);
@@ -333,9 +378,30 @@ img {
   padding: 10px 12px;
 }
 
-.event-item strong {
+.event-item strong,
+.insight-item strong {
   display: block;
   margin-bottom: 2px;
+}
+
+.insight-item {
+  padding: 11px 12px;
+}
+
+.insight-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.insight-item.warn {
+  border-color: rgba(242, 140, 102, 0.38);
+  background: rgba(242, 140, 102, 0.08);
+}
+
+.insight-item.good {
+  border-color: rgba(116, 197, 187, 0.32);
 }
 
 .floating-tool {
@@ -405,7 +471,13 @@ img {
     right: 18px;
   }
 
+  .action-bar {
+    right: 18px;
+    flex-wrap: wrap;
+  }
+
   .controls-card {
     max-width: 170px;
+    top: 72px;
   }
 }
