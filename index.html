@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wonderloop Park</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Isometric Park Builder</p>
+          <h1>Wonderloop Park</h1>
+        </div>
+        <div class="headline-metrics" id="headlineMetrics"></div>
+      </header>
+
+      <main class="main-layout">
+        <section class="viewport-panel">
+          <canvas id="gameCanvas" aria-label="Wonderloop Park simulation"></canvas>
+          <canvas id="minimapCanvas" class="minimap"></canvas>
+          <div class="floating-tools" id="floatingTools"></div>
+          <div class="hover-card" id="hoverCard"></div>
+          <div class="controls-card">
+            <strong>Navigate</strong>
+            <span>WASD / Arrows</span>
+            <span>Wheel to zoom</span>
+            <span>Right drag to pan</span>
+          </div>
+        </section>
+
+        <aside class="sidebar">
+          <section class="vision-card">
+            <img
+              src="./assets/ui/hero-park.svg"
+              alt="Wonderloop Park visual direction illustration"
+            />
+            <div>
+              <p class="eyebrow">Art Direction</p>
+              <h2>Sunlit resort whimsy</h2>
+              <p>
+                Warm copper rides, sea-glass waterways, sculpted gardens, and chunky
+                silhouettes tuned for isometric readability.
+              </p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <p class="eyebrow">Build Palette</p>
+              <h2>Park Tools</h2>
+            </div>
+            <div class="tool-grid" id="toolGrid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <p class="eyebrow">Live Ops</p>
+              <h2>Ride Status</h2>
+            </div>
+            <div class="ride-status-list" id="rideStatusList"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <p class="eyebrow">Park Pulse</p>
+              <h2>Activity Feed</h2>
+            </div>
+            <div class="event-log" id="eventLog"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

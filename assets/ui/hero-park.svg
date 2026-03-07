@@ -1,0 +1,31 @@
+<svg width="720" height="420" viewBox="0 0 720 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="420" rx="36" fill="#10323A"/>
+  <path d="M0 313C117 250 229 227 343 244C485 266 544 328 720 249V420H0V313Z" fill="#174751"/>
+  <path d="M59 273L183 201L310 269L183 341L59 273Z" fill="#4FA161"/>
+  <path d="M244 240L375 165L505 240L375 317L244 240Z" fill="#62AF6A"/>
+  <path d="M432 291L556 219L680 291L556 363L432 291Z" fill="#53A0B2"/>
+  <path d="M183 201L310 269" stroke="#FFE6B5" stroke-width="10" stroke-linecap="round"/>
+  <path d="M375 165L505 240" stroke="#FFE6B5" stroke-width="10" stroke-linecap="round"/>
+  <path d="M334 237C334 192 370 156 415 156C460 156 496 192 496 237V278H334V237Z" fill="#F28C66"/>
+  <path d="M355 237C355 204 382 177 415 177C448 177 475 204 475 237V263H355V237Z" fill="#FFF0C8" fill-opacity=".76"/>
+  <path d="M334 278H496L469 337H361L334 278Z" fill="#D27853"/>
+  <path d="M527 177C527 140 557 110 594 110C631 110 661 140 661 177V199H527V177Z" fill="#74C5BB"/>
+  <circle cx="594" cy="163" r="54" fill="none" stroke="#F3D089" stroke-width="10"/>
+  <circle cx="594" cy="163" r="12" fill="#F28C66"/>
+  <path d="M594 109V217" stroke="#F3D089" stroke-width="5"/>
+  <path d="M540 163H648" stroke="#F3D089" stroke-width="5"/>
+  <circle cx="594" cy="109" r="9" fill="#FFF0C8"/>
+  <circle cx="648" cy="163" r="9" fill="#8AC7D7"/>
+  <circle cx="594" cy="217" r="9" fill="#FFF0C8"/>
+  <circle cx="540" cy="163" r="9" fill="#8AC7D7"/>
+  <path d="M100 152H116V248H100V152Z" fill="#6C4A2E"/>
+  <path d="M78 136C78 108 101 86 129 86C155 86 177 105 179 132C196 137 208 152 208 171C208 194 189 213 166 213H97C69 213 46 191 46 163C46 141 60 122 80 116C83 98 98 86 116 86C138 86 156 99 162 118" fill="#4B9759"/>
+  <path d="M126 302L173 275L221 302L173 330L126 302Z" fill="#F4D36E"/>
+  <path d="M126 302L173 275L221 302" stroke="#A47B4C" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="173" cy="302" r="14" fill="#F28C66"/>
+  <circle cx="233" cy="102" r="36" fill="#F3D089" fill-opacity=".3"/>
+  <circle cx="597" cy="60" r="28" fill="#FFF2C8" fill-opacity=".2"/>
+  <path d="M56 336C180 300 267 290 373 302C476 314 570 350 664 332" stroke="#FFE7B9" stroke-width="8" stroke-linecap="round"/>
+  <text x="40" y="62" fill="#F9F3DC" font-family="Georgia, serif" font-size="34" font-weight="700">Wonderloop Park</text>
+  <text x="40" y="92" fill="#F3D089" font-family="Trebuchet MS, sans-serif" font-size="16" letter-spacing="3">ISOMETRIC RESORT FANTASY</text>
+</svg>

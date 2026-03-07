@@ -1,0 +1,12 @@
+<svg width="160" height="96" viewBox="0 0 160 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="waterBase" x1="80" y1="4" x2="80" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9CE6E0"/>
+      <stop offset="1" stop-color="#3A92A8"/>
+    </linearGradient>
+  </defs>
+  <path d="M80 4L152 48L80 92L8 48L80 4Z" fill="url(#waterBase)" stroke="#216F7F" stroke-width="4"/>
+  <path d="M41 39C49 34 56 34 63 39C71 44 77 45 87 40C96 35 105 35 115 42" stroke="#D8FFFF" stroke-opacity=".65" stroke-width="4" stroke-linecap="round"/>
+  <path d="M49 57C56 53 64 53 73 58C81 63 90 64 100 58C109 53 117 54 123 58" stroke="#B6F7F5" stroke-opacity=".55" stroke-width="4" stroke-linecap="round"/>
+  <path d="M80 10L142 48L80 86L18 48L80 10Z" fill="none" stroke="#DDFEFF" stroke-opacity=".3" stroke-width="3"/>
+</svg>
