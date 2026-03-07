@@ -46,9 +46,9 @@ const OBJECT_DEFS = {
     category: "landmark",
     asset: "gate",
     cost: 0,
-    anchorY: 78,
-    width: 176,
-    height: 162,
+    anchorY: 76,
+    width: 166,
+    height: 154,
     removable: false,
   },
   carousel: {
@@ -57,9 +57,9 @@ const OBJECT_DEFS = {
     category: "ride",
     asset: "carousel",
     cost: 260,
-    width: 166,
-    height: 196,
-    anchorY: 86,
+    width: 154,
+    height: 184,
+    anchorY: 82,
     ticket: 18,
     cycle: 8.5,
     capacity: 5,
@@ -73,9 +73,9 @@ const OBJECT_DEFS = {
     category: "ride",
     asset: "wheel",
     cost: 420,
-    width: 180,
-    height: 218,
-    anchorY: 96,
+    width: 168,
+    height: 204,
+    anchorY: 92,
     ticket: 28,
     cycle: 10.5,
     capacity: 8,
@@ -89,9 +89,9 @@ const OBJECT_DEFS = {
     category: "ride",
     asset: "coaster",
     cost: 700,
-    width: 196,
-    height: 196,
-    anchorY: 88,
+    width: 184,
+    height: 184,
+    anchorY: 84,
     ticket: 36,
     cycle: 12.5,
     capacity: 10,
@@ -105,9 +105,9 @@ const OBJECT_DEFS = {
     category: "facility",
     asset: "food",
     cost: 170,
-    width: 150,
-    height: 150,
-    anchorY: 70,
+    width: 138,
+    height: 138,
+    anchorY: 66,
     ticket: 14,
     cycle: 6.2,
     capacity: 4,
@@ -122,9 +122,9 @@ const OBJECT_DEFS = {
     category: "service",
     asset: "service",
     cost: 220,
-    width: 152,
-    height: 152,
-    anchorY: 70,
+    width: 140,
+    height: 140,
+    anchorY: 66,
     cleanRadius: 4,
     upkeep: 6,
   },
@@ -134,9 +134,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "tree",
     cost: 45,
-    width: 136,
-    height: 168,
-    anchorY: 76,
+    width: 124,
+    height: 154,
+    anchorY: 72,
     scenery: 7,
   },
   flowerbed: {
@@ -145,9 +145,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "flowerbed",
     cost: 32,
-    width: 132,
-    height: 138,
-    anchorY: 58,
+    width: 122,
+    height: 126,
+    anchorY: 54,
     scenery: 5,
   },
   fountain: {
@@ -156,9 +156,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "fountain",
     cost: 125,
-    width: 138,
-    height: 168,
-    anchorY: 78,
+    width: 126,
+    height: 154,
+    anchorY: 72,
     scenery: 14,
     needsPath: true,
   },
@@ -168,9 +168,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "banner",
     cost: 28,
-    width: 102,
-    height: 140,
-    anchorY: 66,
+    width: 92,
+    height: 128,
+    anchorY: 62,
     scenery: 4,
     needsPath: true,
   },
@@ -230,6 +230,7 @@ const state = {
   reachableFromGate: new Set(),
   pathTiles: [],
   orderedTiles: [],
+  activeTileBounds: null,
   assets: {},
   nextObjectId: 1,
   nextGuestId: 1,
@@ -319,10 +320,13 @@ function clampCamera() {
   const minWorldY = -260;
   const maxWorldY = (GRID_WIDTH + GRID_HEIGHT - 2) * (TILE_HEIGHT / 2) + 160;
 
-  const minX = canvas.clientWidth - CAMERA_PADDING - maxWorldX * state.camera.zoom;
-  const maxX = CAMERA_PADDING - minWorldX * state.camera.zoom;
-  const minY = canvas.clientHeight - CAMERA_PADDING - maxWorldY * state.camera.zoom;
-  const maxY = CAMERA_PADDING - minWorldY * state.camera.zoom;
+  const horizontalSlack = Math.max(CAMERA_PADDING, canvas.clientWidth * 0.34);
+  const verticalSlack = Math.max(CAMERA_PADDING, canvas.clientHeight * 0.24);
+
+  const minX = canvas.clientWidth - horizontalSlack - maxWorldX * state.camera.zoom;
+  const maxX = horizontalSlack - minWorldX * state.camera.zoom;
+  const minY = canvas.clientHeight - verticalSlack - maxWorldY * state.camera.zoom;
+  const maxY = verticalSlack - minWorldY * state.camera.zoom;
 
   state.camera.x = minX > maxX ? (minX + maxX) / 2 : clamp(state.camera.x, minX, maxX);
   state.camera.y = minY > maxY ? (minY + maxY) / 2 : clamp(state.camera.y, minY, maxY);
@@ -344,14 +348,105 @@ function setSimulationSpeed(nextSpeed) {
   markUiDirty();
 }
 
+function collectActiveTiles() {
+  const seen = new Set();
+  const active = [];
+
+  for (const tile of state.pathTiles) {
+    const key = tileKey(tile.x, tile.y);
+    if (!seen.has(key)) {
+      seen.add(key);
+      active.push(tile);
+    }
+  }
+
+  for (const object of state.objects.values()) {
+    const key = tileKey(object.x, object.y);
+    if (!seen.has(key)) {
+      seen.add(key);
+      active.push({ x: object.x, y: object.y });
+    }
+  }
+
+  if (!active.length) {
+    active.push({ x: GATE_POSITION.x, y: GATE_POSITION.y }, SPAWN_TILE);
+  }
+
+  return active;
+}
+
+function getActiveWorldBounds() {
+  const bounds = {
+    minX: Number.POSITIVE_INFINITY,
+    maxX: Number.NEGATIVE_INFINITY,
+    minY: Number.POSITIVE_INFINITY,
+    maxY: Number.NEGATIVE_INFINITY,
+  };
+
+  for (const tile of collectActiveTiles()) {
+    const centerX = (tile.x - tile.y) * (TILE_WIDTH / 2);
+    const centerY = (tile.x + tile.y) * (TILE_HEIGHT / 2);
+    const object = getTile(tile.x, tile.y)?.objectId
+      ? state.objects.get(getTile(tile.x, tile.y).objectId)
+      : null;
+    const topLift = object ? object.stats.height - object.stats.anchorY : 0;
+
+    bounds.minX = Math.min(bounds.minX, centerX - TILE_WIDTH * 0.56);
+    bounds.maxX = Math.max(bounds.maxX, centerX + TILE_WIDTH * 0.56);
+    bounds.minY = Math.min(bounds.minY, centerY - topLift - TILE_HEIGHT * 0.3);
+    bounds.maxY = Math.max(bounds.maxY, centerY + TILE_HEIGHT * 0.98);
+  }
+
+  return bounds;
+}
+
+function updateActiveTileBounds() {
+  const activeTiles = collectActiveTiles();
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (const tile of activeTiles) {
+    minX = Math.min(minX, tile.x);
+    maxX = Math.max(maxX, tile.x);
+    minY = Math.min(minY, tile.y);
+    maxY = Math.max(maxY, tile.y);
+  }
+
+  state.activeTileBounds = { minX, maxX, minY, maxY };
+}
+
 function focusCameraOn(tileX, tileY) {
   const focusZoom = canvas.clientWidth < 900 ? 0.76 : 0.92;
   state.camera.zoom = focusZoom;
   const worldX = (tileX - tileY) * (TILE_WIDTH / 2);
   const worldY = (tileX + tileY) * (TILE_HEIGHT / 2);
 
-  state.camera.x = canvas.clientWidth * 0.41 - worldX * state.camera.zoom;
-  state.camera.y = canvas.clientHeight * 0.44 - worldY * state.camera.zoom;
+  state.camera.x = canvas.clientWidth * 0.48 - worldX * state.camera.zoom;
+  state.camera.y = canvas.clientHeight * 0.5 - worldY * state.camera.zoom;
+  clampCamera();
+}
+
+function fitCameraToPark() {
+  const bounds = getActiveWorldBounds();
+  const viewportWidth = canvas.clientWidth - 140;
+  const viewportHeight = canvas.clientHeight - 180;
+  const worldWidth = Math.max(220, bounds.maxX - bounds.minX);
+  const worldHeight = Math.max(180, bounds.maxY - bounds.minY);
+  const minZoom = canvas.clientWidth < 900 ? 0.62 : 0.72;
+  const maxZoom = canvas.clientWidth < 900 ? 0.98 : 1.08;
+
+  state.camera.zoom = clamp(
+    Math.min(viewportWidth / worldWidth, viewportHeight / worldHeight),
+    minZoom,
+    maxZoom,
+  );
+
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerY = (bounds.minY + bounds.maxY) / 2;
+  state.camera.x = canvas.clientWidth * 0.5 - centerX * state.camera.zoom;
+  state.camera.y = canvas.clientHeight * 0.62 - centerY * state.camera.zoom;
   clampCamera();
 }
 
@@ -380,6 +475,7 @@ function createGrid() {
   }
 
   state.orderedTiles = state.tiles.flat().sort((a, b) => a.x + a.y - (b.x + b.y));
+  updateActiveTileBounds();
 }
 
 function markPath(x, y) {
@@ -525,6 +621,7 @@ function refreshParkGraph() {
     object.entry = findObjectEntry(object);
   }
 
+  updateActiveTileBounds();
   markUiDirty();
 }
 
@@ -1420,6 +1517,47 @@ function drawDiamondOutline(x, y, color) {
   ctx.restore();
 }
 
+function drawDiamondFill(x, y, color, alpha) {
+  const screen = tileToScreen(x, y);
+  const halfW = (TILE_WIDTH / 2) * state.camera.zoom;
+  const halfH = (TILE_HEIGHT / 2) * state.camera.zoom;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.beginPath();
+  ctx.moveTo(screen.x, screen.y);
+  ctx.lineTo(screen.x + halfW, screen.y + halfH);
+  ctx.lineTo(screen.x, screen.y + halfH * 2);
+  ctx.lineTo(screen.x - halfW, screen.y + halfH);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+}
+
+function tileFocusDistance(tile) {
+  const bounds = state.activeTileBounds;
+  if (!bounds) {
+    return 0;
+  }
+
+  const padding = 4;
+  const dx =
+    tile.x < bounds.minX - padding
+      ? bounds.minX - padding - tile.x
+      : tile.x > bounds.maxX + padding
+        ? tile.x - (bounds.maxX + padding)
+        : 0;
+  const dy =
+    tile.y < bounds.minY - padding
+      ? bounds.minY - padding - tile.y
+      : tile.y > bounds.maxY + padding
+        ? tile.y - (bounds.maxY + padding)
+        : 0;
+
+  return Math.max(dx, dy);
+}
+
 function drawBackdrop() {
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight);
   gradient.addColorStop(0, "#114250");
@@ -1464,6 +1602,11 @@ function drawTile(tile) {
       ctx.fill();
     }
     ctx.restore();
+  }
+
+  const fadeDistance = tileFocusDistance(tile);
+  if (fadeDistance > 0) {
+    drawDiamondFill(tile.x, tile.y, "#0d2430", clamp(0.08 + fadeDistance * 0.03, 0.08, 0.28));
   }
 }
 
@@ -1755,7 +1898,7 @@ function resizeCanvas() {
   minimapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   if (!state.cameraTouched) {
-    focusCameraOn(14, 22);
+    fitCameraToPark();
   } else {
     clampCamera();
   }
@@ -1797,7 +1940,7 @@ function bindEvents() {
   });
 
   centerCameraButton.addEventListener("click", () => {
-    focusCameraOn(14, 22);
+    fitCameraToPark();
     state.cameraTouched = false;
   });
 
@@ -1815,7 +1958,7 @@ function bindEvents() {
       return;
     }
     if (key === "c") {
-      focusCameraOn(14, 22);
+      fitCameraToPark();
       state.cameraTouched = false;
       return;
     }
@@ -1857,6 +2000,7 @@ async function bootstrap() {
     screenToTile,
     tileToScreen,
     focusCameraOn,
+    fitCameraToPark,
     setTool(toolId) {
       setSelectedTool(toolId);
     },

@@ -131,6 +131,17 @@ img {
   overflow: hidden;
 }
 
+.viewport-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 30% 18%, rgba(240, 200, 111, 0.08), transparent 26%),
+    radial-gradient(circle at 65% 72%, rgba(116, 197, 187, 0.08), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 30%, rgba(0, 0, 0, 0.1) 100%);
+}
+
 #gameCanvas {
   width: 100%;
   height: 100%;
@@ -168,15 +179,22 @@ img {
   gap: 10px;
   align-items: center;
   z-index: 2;
+  padding: 8px;
+  border-radius: 22px;
+  background: rgba(4, 17, 22, 0.72);
+  border: 1px solid rgba(255, 245, 219, 0.12);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
 }
 
 .hover-card,
 .controls-card {
   position: absolute;
-  padding: 12px 14px;
-  border-radius: 18px;
-  background: rgba(4, 17, 22, 0.84);
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: rgba(4, 17, 22, 0.82);
   border: 1px solid rgba(255, 245, 219, 0.14);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
+  z-index: 2;
 }
 
 .hover-card {
@@ -193,32 +211,37 @@ img {
 .hover-card strong,
 .controls-card strong {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
 }
 
 .hover-card span,
 .controls-card span {
   display: block;
   color: var(--muted);
-  font-size: 0.83rem;
+  font-size: 0.84rem;
+  line-height: 1.4;
 }
 
 .controls-card {
   top: 18px;
   right: 18px;
   text-align: right;
+  max-width: 190px;
 }
 
 .action-button,
 .speed-button {
   appearance: none;
   border: 1px solid rgba(255, 245, 219, 0.14);
-  background: rgba(4, 17, 22, 0.84);
+  background: rgba(255, 249, 231, 0.04);
   color: var(--text);
   border-radius: 999px;
-  padding: 10px 14px;
+  padding: 10px 15px;
   font: inherit;
-  font-size: 0.83rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   transition:
     border-color 160ms ease,
     transform 160ms ease,
@@ -236,10 +259,10 @@ img {
 .speed-controls {
   display: flex;
   gap: 8px;
-  padding: 6px;
+  padding: 2px;
   border-radius: 999px;
-  background: rgba(4, 17, 22, 0.78);
-  border: 1px solid rgba(255, 245, 219, 0.12);
+  background: rgba(255, 249, 231, 0.03);
+  border: 1px solid rgba(255, 245, 219, 0.08);
 }
 
 .sidebar {
@@ -405,20 +428,21 @@ img {
 }
 
 .floating-tool {
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: rgba(4, 17, 22, 0.82);
-  min-width: 96px;
+  min-width: 128px;
 }
 
 .floating-tool strong {
   display: block;
-  font-size: 0.86rem;
+  font-size: 0.92rem;
 }
 
 .floating-tool span {
   display: block;
-  font-size: 0.76rem;
+  font-size: 0.79rem;
   color: var(--muted);
+  line-height: 1.35;
 }
 
 .floating-tool.active {
