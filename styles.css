@@ -12,6 +12,8 @@
   --sky: #8ac7d7;
   --shadow: rgba(0, 0, 0, 0.26);
   --danger: #ff6f65;
+  --overlay-scale: 1;
+  --overlay-shift: 0px;
 }
 
 * {
@@ -21,6 +23,7 @@
 html,
 body {
   margin: 0;
+  height: 100%;
   min-height: 100%;
   background:
     radial-gradient(circle at top left, rgba(242, 140, 102, 0.16), transparent 35%),
@@ -28,6 +31,7 @@ body {
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
   color: var(--text);
   font-family: "Trebuchet MS", "Gill Sans", sans-serif;
+  overflow: hidden;
 }
 
 body::before {
@@ -48,8 +52,10 @@ img {
 }
 
 .app-shell {
-  min-height: 100vh;
+  height: 100vh;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .topbar {
@@ -110,6 +116,8 @@ img {
 }
 
 .main-layout {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(310px, 420px);
   gap: 18px;
@@ -127,8 +135,21 @@ img {
 .viewport-panel {
   position: relative;
   border-radius: 30px;
-  min-height: 720px;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
+  isolation: isolate;
+}
+
+.viewport-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(11, 32, 39, 0.46), transparent 48px, transparent calc(100% - 48px), rgba(11, 32, 39, 0.72)),
+    linear-gradient(180deg, rgba(11, 32, 39, 0.26), transparent 48px, transparent calc(100% - 48px), rgba(11, 32, 39, 0.42));
 }
 
 .viewport-panel::after {
@@ -159,6 +180,9 @@ img {
   background: rgba(7, 18, 23, 0.78);
   border: 1px solid rgba(255, 245, 219, 0.15);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: bottom right;
+  z-index: 2;
 }
 
 .floating-tools {
@@ -184,6 +208,8 @@ img {
   background: rgba(4, 17, 22, 0.72);
   border: 1px solid rgba(255, 245, 219, 0.12);
   box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: top left;
 }
 
 .hover-card,
@@ -195,6 +221,7 @@ img {
   border: 1px solid rgba(255, 245, 219, 0.14);
   box-shadow: 0 18px 34px rgba(0, 0, 0, 0.24);
   z-index: 2;
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
 }
 
 .hover-card {
@@ -228,6 +255,7 @@ img {
   right: 18px;
   text-align: right;
   max-width: 190px;
+  transform-origin: top right;
 }
 
 .action-button,
@@ -269,6 +297,9 @@ img {
   display: flex;
   flex-direction: column;
   gap: 18px;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .vision-card {
@@ -353,7 +384,9 @@ img {
 
 .ride-status-list,
 .event-log,
-.insight-list {
+.insight-list,
+.guest-activity-list,
+.goal-list {
   display: grid;
   gap: 10px;
   max-height: 280px;
@@ -364,7 +397,9 @@ img {
 .ride-card,
 .event-item,
 .floating-tool,
-.insight-item {
+.insight-item,
+.guest-activity-item,
+.goal-item {
   border-radius: 18px;
   border: 1px solid rgba(255, 245, 219, 0.1);
   background: rgba(255, 249, 231, 0.05);
@@ -427,6 +462,46 @@ img {
   border-color: rgba(116, 197, 187, 0.32);
 }
 
+.guest-activity-item,
+.goal-item {
+  padding: 12px;
+}
+
+.guest-activity-item strong,
+.goal-item strong {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.guest-activity-item span,
+.goal-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.goal-item.current {
+  border-color: rgba(240, 200, 111, 0.42);
+  background: rgba(240, 200, 111, 0.08);
+}
+
+.goal-item.locked {
+  opacity: 0.72;
+}
+
+.guest-chip,
+.goal-chip {
+  color: var(--gold);
+}
+
+.guest-chip.warn,
+.goal-chip.warn {
+  color: var(--danger);
+}
+
 .floating-tool {
   padding: 12px 14px;
   background: rgba(4, 17, 22, 0.82);
@@ -450,7 +525,23 @@ img {
   background: rgba(240, 200, 111, 0.12);
 }
 
+.floating-tools {
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: bottom left;
+  z-index: 2;
+}
+
 @media (max-width: 1100px) {
+  html,
+  body {
+    overflow: auto;
+  }
+
+  .app-shell {
+    height: auto;
+    min-height: 100vh;
+  }
+
   .main-layout {
     grid-template-columns: 1fr;
   }

@@ -4,6 +4,8 @@ const minimapCanvas = document.getElementById("minimapCanvas");
 const minimapCtx = minimapCanvas.getContext("2d");
 
 const toolGrid = document.getElementById("toolGrid");
+const guestActivityList = document.getElementById("guestActivityList");
+const goalList = document.getElementById("goalList");
 const rideStatusList = document.getElementById("rideStatusList");
 const insightList = document.getElementById("insightList");
 const eventLog = document.getElementById("eventLog");
@@ -190,6 +192,30 @@ const TOOLS = [
   { id: "remove", label: "Remove", detail: "Refund half of placed items.", cost: 0 },
 ];
 
+const GROWTH_MILESTONES = [
+  {
+    id: "buzzing",
+    score: 170,
+    label: "Buzzing",
+    reward: 240,
+    detail: "Reach a lively early-park rhythm with dependable guest circulation.",
+  },
+  {
+    id: "signature",
+    score: 320,
+    label: "Signature",
+    reward: 420,
+    detail: "Sustain a destination-worthy mix of rides, scenery, and service coverage.",
+  },
+  {
+    id: "destination",
+    score: 520,
+    label: "Destination",
+    reward: 680,
+    detail: "Operate a premium park guests happily explore for multiple stops.",
+  },
+];
+
 const ASSET_PATHS = {
   grass: "./assets/tiles/grass.svg",
   path: "./assets/tiles/path.svg",
@@ -222,6 +248,7 @@ const state = {
   totalGuestCount: 0,
   totalRevenue: 0,
   totalUpkeep: 0,
+  weeklyProfit: 0,
   averageHappiness: 82,
   cleanliness: 100,
   uiClock: 0,
@@ -248,8 +275,11 @@ const state = {
     y: -280,
     zoom: 0.92,
   },
+  viewportScale: 1,
   cameraTouched: false,
   feed: [],
+  claimedMilestones: new Set(),
+  focusedTile: { x: GATE_POSITION.x, y: GATE_POSITION.y },
 };
 
 function clamp(value, min, max) {
@@ -308,6 +338,26 @@ function markUiDirty() {
   state.uiDirty = true;
 }
 
+function getViewportMetrics() {
+  const visualViewport = window.visualViewport;
+  return {
+    width: visualViewport?.width ?? window.innerWidth,
+    height: visualViewport?.height ?? window.innerHeight,
+    scale: visualViewport?.scale ?? 1,
+  };
+}
+
+function updateViewportResponsiveState() {
+  const metrics = getViewportMetrics();
+  state.viewportScale = metrics.scale;
+
+  const overlayScale = clamp(1 / Math.sqrt(metrics.scale), 0.86, 1);
+  const overlayShift = metrics.scale > 1.01 ? `${Math.round((metrics.scale - 1) * 14)}px` : "0px";
+
+  document.documentElement.style.setProperty("--overlay-scale", overlayScale.toFixed(3));
+  document.documentElement.style.setProperty("--overlay-shift", overlayShift);
+}
+
 function isObjectOperational(object) {
   return Boolean(
     object?.entry && state.reachableFromGate.has(tileKey(object.entry.x, object.entry.y)),
@@ -320,8 +370,9 @@ function clampCamera() {
   const minWorldY = -260;
   const maxWorldY = (GRID_WIDTH + GRID_HEIGHT - 2) * (TILE_HEIGHT / 2) + 160;
 
-  const horizontalSlack = Math.max(CAMERA_PADDING, canvas.clientWidth * 0.34);
-  const verticalSlack = Math.max(CAMERA_PADDING, canvas.clientHeight * 0.24);
+  const zoomAdjustedPadding = CAMERA_PADDING / Math.max(state.viewportScale, 1);
+  const horizontalSlack = Math.max(zoomAdjustedPadding, canvas.clientWidth * 0.34);
+  const verticalSlack = Math.max(zoomAdjustedPadding, canvas.clientHeight * 0.24);
 
   const minX = canvas.clientWidth - horizontalSlack - maxWorldX * state.camera.zoom;
   const maxX = horizontalSlack - minWorldX * state.camera.zoom;
@@ -430,8 +481,8 @@ function focusCameraOn(tileX, tileY) {
 
 function fitCameraToPark() {
   const bounds = getActiveWorldBounds();
-  const viewportWidth = canvas.clientWidth - 140;
-  const viewportHeight = canvas.clientHeight - 180;
+  const viewportWidth = canvas.clientWidth - 140 / Math.max(state.viewportScale, 1);
+  const viewportHeight = canvas.clientHeight - 180 / Math.max(state.viewportScale, 1);
   const worldWidth = Math.max(220, bounds.maxX - bounds.minX);
   const worldHeight = Math.max(180, bounds.maxY - bounds.minY);
   const minZoom = canvas.clientWidth < 900 ? 0.62 : 0.72;
@@ -1006,6 +1057,13 @@ function updateGuests(deltaTime) {
       }
 
       const next = guest.route[0];
+      if (!getTile(next.x, next.y)?.path) {
+        guest.route = [];
+        guest.state = "thinking";
+        guest.targetId = null;
+        guest.waitingAt = null;
+        continue;
+      }
       const stepX = next.x - guest.x;
       const stepY = next.y - guest.y;
       const distance = Math.hypot(stepX, stepY);
@@ -1028,7 +1086,7 @@ function updateGuests(deltaTime) {
 
     if (guest.state === "queuing") {
       const object = state.objects.get(guest.waitingAt);
-      if (!object) {
+      if (!object || !isObjectOperational(object)) {
         guest.waitingAt = null;
         guest.state = "thinking";
         continue;
@@ -1169,8 +1227,16 @@ function updateEconomy(deltaTime) {
 
   if (state.dayClock >= 28) {
     state.dayClock -= 28;
+    const weeklyBonus = Math.round(
+      Math.max(0, state.growthScore * 0.18 + state.averageHappiness * 1.5 + state.cleanliness),
+    );
+    state.money += weeklyBonus;
+    state.weeklyProfit = weeklyBonus;
     state.day += 1;
-    addEvent("Park growth", `Week ${state.day} has started. Attendance pressure is rising.`);
+    addEvent(
+      "Weekly report",
+      `Week ${state.day} started with a $${weeklyBonus} growth dividend from park performance.`,
+    );
   }
 
   state.guestSpawnTimer -= deltaTime;
@@ -1237,6 +1303,22 @@ function computeParkMetrics() {
   );
 }
 
+function maybeAwardGrowthMilestones() {
+  for (const milestone of GROWTH_MILESTONES) {
+    if (state.growthScore < milestone.score || state.claimedMilestones.has(milestone.id)) {
+      continue;
+    }
+
+    state.claimedMilestones.add(milestone.id);
+    state.money += milestone.reward;
+    addEvent(
+      "Growth milestone",
+      `${milestone.label} status reached. Investors kicked in $${milestone.reward} for the next expansion.`,
+    );
+    markUiDirty();
+  }
+}
+
 function growthLabel() {
   if (state.growthScore < 170) {
     return "Budding";
@@ -1248,6 +1330,102 @@ function growthLabel() {
     return "Signature";
   }
   return "Destination";
+}
+
+function getGuestActivityItems() {
+  const hungry = state.guests.filter((guest) => guest.hunger >= 58).length;
+  const delighted = state.guests.filter((guest) => guest.happiness >= 86).length;
+  const queuing = state.guests.filter((guest) => guest.state === "queuing").length;
+  const leaving = state.guests.filter((guest) => guest.state === "leaving").length;
+  const wandering = state.guests.filter(
+    (guest) => guest.state === "walking" || guest.state === "strolling",
+  ).length;
+
+  return [
+    {
+      label: "Exploring paths",
+      value: wandering,
+      tone: "good",
+      detail: "Guests actively walking the park and reacting to your layout.",
+    },
+    {
+      label: "Waiting in line",
+      value: queuing,
+      tone: queuing >= Math.max(6, state.guests.length * 0.3) ? "warn" : "good",
+      detail: "High queue load means attractions are drawing well but may need overflow options.",
+    },
+    {
+      label: "Feeling hungry",
+      value: hungry,
+      tone: hungry >= Math.max(5, state.guests.length * 0.25) ? "warn" : "good",
+      detail: "Hungry guests lose patience faster. Food stalls help stabilize happiness.",
+    },
+    {
+      label: "Leaving soon",
+      value: leaving,
+      tone: leaving >= 3 ? "warn" : "good",
+      detail: delighted
+        ? `${delighted} guests are currently delighted by scenery or rides.`
+        : "Keep scenery and ride variety up to send guests home happy.",
+    },
+  ];
+}
+
+function getGoalItems() {
+  const nextMilestone = GROWTH_MILESTONES.find((milestone) => state.growthScore < milestone.score);
+  const rideCount = [...state.objects.values()].filter((object) => object.category === "ride").length;
+  const serviceCount = [...state.objects.values()].filter((object) => object.category === "service").length;
+  const crowdedRide = [...state.objects.values()].find(
+    (object) =>
+      (object.category === "ride" || object.category === "facility") &&
+      object.queue.length >= Math.ceil(object.stats.queueLimit * 0.65),
+  );
+  const recommendedAction =
+    state.cleanliness < 74
+      ? "Add a care hub near your busiest branch."
+      : crowdedRide
+        ? `Branch paths near ${crowdedRide.label} or add a second marquee draw.`
+        : rideCount < 3
+          ? "Invest in another headline ride to lift attendance."
+          : serviceCount < 1
+            ? "Add service coverage before the park gets messy."
+            : "Use scenery to lift happiness and keep guests circulating.";
+
+  const items = [];
+
+  if (nextMilestone) {
+    items.push({
+      label: `Next tier: ${nextMilestone.label}`,
+      chip: `${state.growthScore} / ${nextMilestone.score}`,
+      tone: "good",
+      detail: nextMilestone.detail,
+      current: true,
+    });
+  } else {
+    items.push({
+      label: "Top tier reached",
+      chip: growthLabel(),
+      tone: "good",
+      detail: "You are now tuning a destination park. Focus on polish, queue balance, and cleanliness.",
+      current: true,
+    });
+  }
+
+  items.push({
+    label: "Recommended next move",
+    chip: state.cleanliness < 74 || crowdedRide ? "Needs attention" : "On track",
+    tone: state.cleanliness < 74 || crowdedRide ? "warn" : "good",
+    detail: recommendedAction,
+  });
+
+  items.push({
+    label: `Weekly operating result`,
+    chip: `${state.weeklyProfit >= 0 ? "+" : ""}$${Math.round(state.weeklyProfit)}`,
+    tone: state.weeklyProfit < 0 ? "warn" : "good",
+    detail: "Positive weekly cashflow lets you expand without stalling out on upkeep.",
+  });
+
+  return items;
 }
 
 function addEvent(title, description) {
@@ -1334,6 +1512,28 @@ function renderPanels() {
     <div class="metric-pill"><strong>${state.cleanliness}%</strong><span>Cleanliness</span></div>
     <div class="metric-pill"><strong>${growthLabel()}</strong><span>Growth score ${state.growthScore}</span></div>
   `;
+
+  guestActivityList.innerHTML = getGuestActivityItems()
+    .map(
+      (entry) => `
+        <article class="guest-activity-item">
+          <strong>${entry.label}<span class="guest-chip ${entry.tone === "warn" ? "warn" : ""}">${entry.value}</span></strong>
+          <span>${entry.detail}</span>
+        </article>
+      `,
+    )
+    .join("");
+
+  goalList.innerHTML = getGoalItems()
+    .map(
+      (goal) => `
+        <article class="goal-item ${goal.current ? "current" : ""}">
+          <strong>${goal.label}<span class="goal-chip ${goal.tone === "warn" ? "warn" : ""}">${goal.chip}</span></strong>
+          <span>${goal.detail}</span>
+        </article>
+      `,
+    )
+    .join("");
 
   const buildables = [...state.objects.values()].filter((object) => object.type !== "gate");
   rideStatusList.innerHTML = buildables
@@ -1815,11 +2015,7 @@ function updateCamera(deltaTime) {
   clampCamera();
 }
 
-function gameLoop(timestamp) {
-  const realDeltaTime = clamp((timestamp - (gameLoop.lastTime ?? timestamp)) / 1000, 0, 0.033);
-  gameLoop.lastTime = timestamp;
-  const simDeltaTime = realDeltaTime * state.timeScale;
-
+function stepFrame(realDeltaTime, simDeltaTime) {
   updateCamera(realDeltaTime);
   if (simDeltaTime > 0) {
     updateEconomy(simDeltaTime);
@@ -1827,14 +2023,97 @@ function gameLoop(timestamp) {
     updateObjects(simDeltaTime);
   }
   computeParkMetrics();
+  maybeAwardGrowthMilestones();
   state.uiClock += realDeltaTime;
   if (state.uiDirty || state.uiClock >= 0.2) {
     state.uiClock = 0;
     renderPanels();
   }
   render();
+}
+
+function gameLoop(timestamp) {
+  const realDeltaTime = clamp((timestamp - (gameLoop.lastTime ?? timestamp)) / 1000, 0, 0.033);
+  gameLoop.lastTime = timestamp;
+  stepFrame(realDeltaTime, realDeltaTime * state.timeScale);
 
   requestAnimationFrame(gameLoop);
+}
+
+function getFocusedTileSummary() {
+  const tile = state.focusedTile && inBounds(state.focusedTile.x, state.focusedTile.y)
+    ? getTile(state.focusedTile.x, state.focusedTile.y)
+    : null;
+
+  if (!tile) {
+    return null;
+  }
+
+  const object = tile.objectId ? state.objects.get(tile.objectId) : null;
+  return {
+    tile: { x: tile.x, y: tile.y, terrain: tile.terrain, path: tile.path, litter: tile.litter },
+    object: object
+      ? {
+          type: object.type,
+          label: object.label,
+          queue: object.queue.length,
+          riders: object.riders.length,
+          operational: isObjectOperational(object),
+        }
+      : null,
+  };
+}
+
+function renderGameToText() {
+  const rides = [...state.objects.values()]
+    .filter((object) => object.category === "ride" || object.category === "facility")
+    .map((object) => ({
+      id: object.id,
+      type: object.type,
+      label: object.label,
+      x: object.x,
+      y: object.y,
+      queue: object.queue.length,
+      riders: object.riders.length,
+      operational: isObjectOperational(object),
+    }));
+
+  const guestStates = getGuestActivityItems().map((entry) => ({
+    label: entry.label,
+    value: entry.value,
+  }));
+
+  return JSON.stringify({
+    mode: "play",
+    coordinateSystem: "Grid origin is top-left at tile 0,0. +x moves down-right on screen, +y moves down-left on screen.",
+    selectedTool: state.selectedTool,
+    timeScale: state.timeScale,
+    day: state.day,
+    money: Math.round(state.money),
+    growthScore: state.growthScore,
+    growthLabel: growthLabel(),
+    cleanliness: state.cleanliness,
+    averageHappiness: state.averageHappiness,
+    guestsInside: state.guests.length,
+    guestsServed: state.guestsServed,
+    guestStates,
+    focused: getFocusedTileSummary(),
+    rides,
+    recentEvents: state.feed.slice(0, 4).map((entry) => ({
+      title: entry.title,
+      description: entry.description,
+    })),
+  });
+}
+
+function advanceTime(ms) {
+  const stepMs = 1000 / 60;
+  const steps = Math.max(1, Math.round(ms / stepMs));
+  const deltaSeconds = ms / 1000 / steps;
+
+  for (let i = 0; i < steps; i += 1) {
+    stepFrame(deltaSeconds, deltaSeconds * state.timeScale);
+  }
 }
 
 function handlePointerMove(event) {
@@ -1842,6 +2121,7 @@ function handlePointerMove(event) {
   state.pointer.x = event.clientX - rect.left;
   state.pointer.y = event.clientY - rect.top;
   state.pointer.tile = screenToTile(state.pointer.x, state.pointer.y);
+  state.focusedTile = state.pointer.tile;
 
   if (state.pointer.isPanning) {
     state.camera.x += event.movementX;
@@ -1862,6 +2142,7 @@ function handlePointerDown(event) {
   state.pointer.x = event.clientX - rect.left;
   state.pointer.y = event.clientY - rect.top;
   state.pointer.tile = screenToTile(state.pointer.x, state.pointer.y);
+  state.focusedTile = state.pointer.tile;
 
   if (event.button === 2) {
     state.pointer.isPanning = true;
@@ -1886,6 +2167,7 @@ function handlePointerUp() {
 }
 
 function resizeCanvas() {
+  updateViewportResponsiveState();
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * dpr;
@@ -1902,6 +2184,15 @@ function resizeCanvas() {
   } else {
     clampCamera();
   }
+}
+
+async function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+    return;
+  }
+
+  await document.documentElement.requestFullscreen?.();
 }
 
 function bindEvents() {
@@ -1954,12 +2245,19 @@ function bindEvents() {
     const key = event.key.toLowerCase();
 
     if (SHORTCUT_TO_TOOL[key]) {
+      event.preventDefault();
       setSelectedTool(SHORTCUT_TO_TOOL[key]);
       return;
     }
     if (key === "c") {
+      event.preventDefault();
       fitCameraToPark();
       state.cameraTouched = false;
+      return;
+    }
+    if (key === "f") {
+      event.preventDefault();
+      toggleFullscreen();
       return;
     }
     if (key === " ") {
@@ -1979,20 +2277,31 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", resizeCanvas);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", resizeCanvas);
+  }
 }
 
 async function bootstrap() {
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+  window.scrollTo(0, 0);
   createGrid();
   seedPark();
   await loadAssets();
   renderToolButtons();
   renderSpeedButtons();
   bindEvents();
+  updateViewportResponsiveState();
   resizeCanvas();
   computeParkMetrics();
   renderPanels();
   addEvent("Park open", "Wonderloop Park is ready for new paths, rides, and scenic upgrades.");
   addEvent("Starter layout", "The opening plaza includes a carousel, food, and care coverage.");
+  window.advanceTime = advanceTime;
+  window.render_game_to_text = renderGameToText;
   window.__wonderloop = {
     state,
     useToolAt,
@@ -2006,6 +2315,9 @@ async function bootstrap() {
     },
     setSpeed(speed) {
       setSimulationSpeed(speed);
+    },
+    snapshot() {
+      return JSON.parse(renderGameToText());
     },
   };
   requestAnimationFrame(gameLoop);
