@@ -1,0 +1,59 @@
+.sidebar {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-auto-rows: max-content;
+  gap: 12px;
+  padding: 0 4px 0 0;
+  scrollbar-color: rgba(48, 119, 131, 0.34) transparent;
+}
+
+.vision-card,
+.panel {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.vision-card {
+  padding: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.vision-card img {
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
+  box-shadow: 0 14px 28px rgba(23, 53, 61, 0.14);
+}
+
+.vision-card h2 {
+  font-size: 1.15rem;
+}
+
+.vision-card p:last-child {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 620;
+  line-height: 1.38;
+}
+
+.panel {
+  padding: 14px;
+}
+
+.panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.panel-heading h2 {
+  font-size: 1.13rem;
+  line-height: 1;
+}

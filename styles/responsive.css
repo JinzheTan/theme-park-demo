@@ -1,0 +1,64 @@
+@media (max-width: 1180px) {
+  body { overflow: auto; }
+  .app-shell { height: auto; min-height: 100vh; }
+  .topbar { grid-template-columns: 1fr; align-items: start; }
+  .headline-metrics { grid-template-columns: repeat(3, minmax(130px, 1fr)); }
+  .main-layout { grid-template-columns: 1fr; }
+  .viewport-panel { min-height: min(72vh, 720px); }
+  .sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+    padding-right: 0;
+  }
+  .vision-card { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  body { overflow: auto; }
+  .app-shell { padding: 12px; gap: 12px; }
+  .topbar h1 { font-size: 2.25rem; }
+  .headline-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .pill--metric {
+    min-height: 54px;
+    padding: 8px 10px;
+  }
+  .pill--metric img { width: 31px; height: 31px; }
+
+  .viewport-panel { min-height: 620px; border-radius: 26px; }
+
+  .action-bar {
+    right: 14px;
+    left: 14px;
+    flex-wrap: wrap;
+    border-radius: 22px;
+  }
+  .controls-launcher { top: 86px; right: 14px; }
+
+  .floating-tools {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    grid-template-columns: 1fr;
+    max-width: 250px;
+  }
+  .floating-tool { padding: 9px 11px; }
+
+  .minimap { width: 148px; height: 148px; right: 14px; bottom: 14px; }
+
+  .sidebar { grid-template-columns: 1fr; }
+
+  .tool-grid { grid-template-columns: 1fr; }
+
+  .ride-status-list,
+  .event-log,
+  .insight-list,
+  .guest-activity-list,
+  .goal-list { max-height: none; }
+}
+
+@media (max-width: 520px) {
+  .headline-metrics { grid-template-columns: 1fr; }
+  .minimap { width: 128px; height: 128px; }
+  .floating-tools { max-width: 210px; }
+}

@@ -1,0 +1,85 @@
+:root {
+  /* Brand palette */
+  --bg-top: #d9f5fb;
+  --bg-mid: #a9e0e5;
+  --bg-bottom: #4aa0a9;
+  --ink: #17353d;
+  --ink-strong: #09242c;
+  --muted: #627981;
+  --cream: #fffaf0;
+  --gold: #d89d26;
+  --gold-ink: #8e641d;
+  --coral: #ed7f62;
+  --mint: #36bca9;
+  --sky: #3daec6;
+  --danger: #e45454;
+  --good: #239a78;
+  --shadow: rgba(28, 83, 94, 0.2);
+  --shadow-strong: rgba(22, 66, 76, 0.32);
+
+  /* Glass surface tiers — pick one per element. The three tiers exist to
+     create a clear depth language: floating overlays sit lightest, panels in
+     the middle, hero containers darkest. */
+
+  /* Depth 1 — lightweight floating overlays (hover-card, floating-tool, minimap, action-bar, controls). */
+  --glass-1-bg:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.20)),
+    rgba(255, 255, 255, 0.28);
+  --glass-1-border: rgba(255, 255, 255, 0.62);
+  --glass-1-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 14px 28px rgba(28, 83, 94, 0.14);
+  --glass-1-blur: blur(20px) saturate(1.3);
+
+  /* Depth 2 — standard panels (sidebar panel, tool button, list cards, metric pills). */
+  --glass-2-bg:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.22)),
+    rgba(255, 255, 255, 0.34);
+  --glass-2-border: rgba(255, 255, 255, 0.70);
+  --glass-2-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 22px 50px rgba(28, 83, 94, 0.20);
+  --glass-2-blur: blur(24px) saturate(1.35);
+
+  /* Depth 3 — hero containers (viewport, vision-card). */
+  --glass-3-bg:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.12)),
+    rgba(255, 255, 255, 0.25);
+  --glass-3-border: rgba(255, 255, 255, 0.78);
+  --glass-3-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 32px 70px rgba(28, 83, 94, 0.26);
+  --glass-3-blur: blur(28px) saturate(1.4);
+
+  /* Single accent (active) state. Applied additively as .glass--active. */
+  --accent-border: rgba(216, 157, 38, 0.55);
+  --accent-bg:
+    linear-gradient(145deg, rgba(255, 245, 214, 0.86), rgba(255, 255, 255, 0.36));
+  --accent-glow: 0 12px 22px rgba(216, 157, 38, 0.18);
+
+  /* Pill chassis (used by metric pills, action buttons, speed toggles). */
+  --pill-height: 36px;
+  --pill-radius: 999px;
+  --pill-padding-x: 14px;
+
+  /* Component radii */
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+
+  /* Z-stack contract (avoid overlay collisions). */
+  --z-canvas: 1;
+  --z-overlay-pinned: 4;
+  --z-overlay-hover: 6;
+  --z-modal: 10;
+
+  /* Motion */
+  --ease-glass: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur-base: 220ms;
+
+  /* Responsive viewport state set by JS. */
+  --overlay-scale: 1;
+  --overlay-shift: 0px;
+}

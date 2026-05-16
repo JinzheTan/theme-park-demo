@@ -1,0 +1,56 @@
+.app-shell {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  padding: 16px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
+}
+
+.topbar {
+  min-height: 86px;
+  display: grid;
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.topbar h1,
+.panel h2,
+.vision-card h2 {
+  margin: 0;
+  color: var(--ink-strong);
+  font-family: ui-serif, "New York", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  font-weight: 760;
+  letter-spacing: 0;
+}
+
+.topbar h1 {
+  font-size: clamp(2.2rem, 3.3vw, 3.85rem);
+  line-height: 0.92;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold-ink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.headline-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.main-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(326px, 390px);
+  gap: 14px;
+}

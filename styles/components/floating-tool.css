@@ -1,0 +1,43 @@
+.floating-tools {
+  position: absolute;
+  left: 18px;
+  right: 204px;
+  bottom: 18px;
+  z-index: var(--z-overlay-pinned);
+  display: grid;
+  grid-template-columns: minmax(150px, 1.1fr) minmax(138px, 0.9fr) minmax(138px, 0.9fr);
+  gap: 9px;
+  pointer-events: none;
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: bottom left;
+}
+
+.floating-tool {
+  min-width: 0;
+  padding: 11px 13px;
+  border-radius: 18px;
+  color: var(--ink);
+  pointer-events: auto;
+}
+
+.floating-tool strong {
+  display: block;
+  overflow: hidden;
+  color: var(--ink-strong);
+  font-size: 0.9rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.floating-tool span {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 650;
+  line-height: 1.28;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

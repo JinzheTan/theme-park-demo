@@ -1,0 +1,42 @@
+.hover-card {
+  position: absolute;
+  z-index: var(--z-overlay-hover);
+  color: var(--ink);
+  padding: 12px 14px;
+  border-radius: 20px;
+  min-width: 208px;
+  max-width: min(280px, calc(100% - 36px));
+  pointer-events: none;
+
+  /* enter/exit animation — node is always mounted, only opacity toggled */
+  opacity: 0;
+  transform: translateY(4px) scale(0.98);
+  transition:
+    opacity var(--dur-fast) var(--ease-glass),
+    transform var(--dur-fast) var(--ease-glass);
+  will-change: opacity, transform;
+}
+
+.hover-card.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.hover-card strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink-strong);
+  font-size: 0.9rem;
+}
+
+.hover-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.36;
+}
+
+.hover-card span.warn {
+  color: var(--danger);
+}

@@ -1,0 +1,33 @@
+/* Mobile drawer tabs — only visible below 760px. */
+
+.mobile-tabs {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .mobile-tabs {
+    position: sticky;
+    top: 8px;
+    z-index: var(--z-overlay-pinned);
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .mobile-tabs .pill-group {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* Hide all panels by default; show the active one. */
+  .sidebar[data-active-tab] .panel,
+  .sidebar[data-active-tab] .vision-card { display: none; }
+
+  .sidebar[data-active-tab="tools"] [data-tab-panel="tools"],
+  .sidebar[data-active-tab="activity"] [data-tab-panel="activity"],
+  .sidebar[data-active-tab="goals"] [data-tab-panel="goals"],
+  .sidebar[data-active-tab="rides"] [data-tab-panel="rides"],
+  .sidebar[data-active-tab="notes"] [data-tab-panel="notes"] {
+    display: block;
+  }
+}

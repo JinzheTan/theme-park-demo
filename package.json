@@ -1,24 +1,23 @@
 {
-  "name": "theme-park-demo",
+  "name": "wonderloop-park",
   "version": "1.0.0",
-  "description": "",
-  "main": "main.js",
+  "description": "Vanilla-JS isometric theme-park simulation.",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npx --yes http-server -c-1 -p 5173 .",
+    "qa": "node qa/run-playwright.mjs",
+    "lint:dead": "node qa/grep-dead-imports.mjs"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JinzheTan/theme-park-demo.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/JinzheTan/theme-park-demo/issues"
   },
   "homepage": "https://github.com/JinzheTan/theme-park-demo#readme",
-  "dependencies": {
+  "devDependencies": {
     "playwright": "^1.58.2"
   }
 }
