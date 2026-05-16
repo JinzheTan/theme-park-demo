@@ -48,9 +48,9 @@ const OBJECT_DEFS = {
     category: "landmark",
     asset: "gate",
     cost: 0,
-    anchorY: 76,
-    width: 166,
-    height: 154,
+    anchorY: 94,
+    width: 178,
+    height: 180,
     removable: false,
   },
   carousel: {
@@ -59,9 +59,9 @@ const OBJECT_DEFS = {
     category: "ride",
     asset: "carousel",
     cost: 260,
-    width: 154,
-    height: 184,
-    anchorY: 82,
+    width: 150,
+    height: 198,
+    anchorY: 94,
     ticket: 18,
     cycle: 8.5,
     capacity: 5,
@@ -75,9 +75,9 @@ const OBJECT_DEFS = {
     category: "ride",
     asset: "wheel",
     cost: 420,
-    width: 168,
-    height: 204,
-    anchorY: 92,
+    width: 154,
+    height: 232,
+    anchorY: 116,
     ticket: 28,
     cycle: 10.5,
     capacity: 8,
@@ -91,9 +91,9 @@ const OBJECT_DEFS = {
     category: "ride",
     asset: "coaster",
     cost: 700,
-    width: 184,
-    height: 184,
-    anchorY: 84,
+    width: 212,
+    height: 210,
+    anchorY: 100,
     ticket: 36,
     cycle: 12.5,
     capacity: 10,
@@ -107,9 +107,9 @@ const OBJECT_DEFS = {
     category: "facility",
     asset: "food",
     cost: 170,
-    width: 138,
-    height: 138,
-    anchorY: 66,
+    width: 136,
+    height: 154,
+    anchorY: 76,
     ticket: 14,
     cycle: 6.2,
     capacity: 4,
@@ -124,9 +124,9 @@ const OBJECT_DEFS = {
     category: "service",
     asset: "service",
     cost: 220,
-    width: 140,
-    height: 140,
-    anchorY: 66,
+    width: 150,
+    height: 142,
+    anchorY: 70,
     cleanRadius: 4,
     upkeep: 6,
   },
@@ -136,9 +136,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "tree",
     cost: 45,
-    width: 124,
-    height: 154,
-    anchorY: 72,
+    width: 112,
+    height: 124,
+    anchorY: 78,
     scenery: 7,
   },
   flowerbed: {
@@ -147,9 +147,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "flowerbed",
     cost: 32,
-    width: 122,
-    height: 126,
-    anchorY: 54,
+    width: 132,
+    height: 102,
+    anchorY: 52,
     scenery: 5,
   },
   fountain: {
@@ -158,9 +158,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "fountain",
     cost: 125,
-    width: 126,
-    height: 154,
-    anchorY: 72,
+    width: 132,
+    height: 110,
+    anchorY: 58,
     scenery: 14,
     needsPath: true,
   },
@@ -170,9 +170,9 @@ const OBJECT_DEFS = {
     category: "scenery",
     asset: "banner",
     cost: 28,
-    width: 92,
-    height: 128,
-    anchorY: 62,
+    width: 88,
+    height: 108,
+    anchorY: 64,
     scenery: 4,
     needsPath: true,
   },
@@ -217,19 +217,26 @@ const GROWTH_MILESTONES = [
 ];
 
 const ASSET_PATHS = {
-  grass: "./assets/tiles/grass.svg",
-  path: "./assets/tiles/path.svg",
-  water: "./assets/tiles/water.svg",
-  tree: "./assets/scenery/tree.svg",
-  flowerbed: "./assets/scenery/flowerbed.svg",
-  fountain: "./assets/scenery/fountain.svg",
-  banner: "./assets/scenery/banner.svg",
-  carousel: "./assets/rides/carousel.svg",
-  wheel: "./assets/rides/ferris-wheel.svg",
-  coaster: "./assets/rides/coaster.svg",
-  food: "./assets/buildings/food-stall.svg",
-  service: "./assets/buildings/service-hub.svg",
-  gate: "./assets/buildings/gate.svg",
+  grass: "./assets/generated/grass.png",
+  path: "./assets/generated/path.png",
+  water: "./assets/generated/water.png",
+  tree: "./assets/generated/tree.png",
+  flowerbed: "./assets/generated/flowerbed.png",
+  fountain: "./assets/generated/fountain.png",
+  banner: "./assets/generated/banner.png",
+  carousel: "./assets/generated/carousel.png",
+  wheel: "./assets/generated/ferris-wheel.png",
+  coaster: "./assets/generated/coaster.png",
+  food: "./assets/generated/food-stall.png",
+  service: "./assets/generated/service-hub.png",
+  gate: "./assets/generated/gate.png",
+};
+
+const METRIC_ICON_PATHS = {
+  money: "./assets/generated/money.png",
+  guests: "./assets/generated/guests.png",
+  happiness: "./assets/generated/happiness.png",
+  cleanliness: "./assets/generated/cleanliness.png",
 };
 
 const state = {
@@ -1506,10 +1513,10 @@ function renderSpeedButtons() {
 
 function renderPanels() {
   headlineMetrics.innerHTML = `
-    <div class="metric-pill"><strong>$${Math.round(state.money)}</strong><span>Cash on hand</span></div>
-    <div class="metric-pill"><strong>${state.guests.length}</strong><span>Guests inside</span></div>
-    <div class="metric-pill"><strong>${state.averageHappiness}%</strong><span>Average happiness</span></div>
-    <div class="metric-pill"><strong>${state.cleanliness}%</strong><span>Cleanliness</span></div>
+    <div class="metric-pill"><img src="${METRIC_ICON_PATHS.money}" alt="" /><div><strong>$${Math.round(state.money)}</strong><span>Cash on hand</span></div></div>
+    <div class="metric-pill"><img src="${METRIC_ICON_PATHS.guests}" alt="" /><div><strong>${state.guests.length}</strong><span>Guests inside</span></div></div>
+    <div class="metric-pill"><img src="${METRIC_ICON_PATHS.happiness}" alt="" /><div><strong>${state.averageHappiness}%</strong><span>Average happiness</span></div></div>
+    <div class="metric-pill"><img src="${METRIC_ICON_PATHS.cleanliness}" alt="" /><div><strong>${state.cleanliness}%</strong><span>Cleanliness</span></div></div>
     <div class="metric-pill"><strong>${growthLabel()}</strong><span>Growth score ${state.growthScore}</span></div>
   `;
 
@@ -1677,9 +1684,15 @@ function loadImage(src) {
 }
 
 async function loadAssets() {
-  const loaded = await Promise.all(
-    Object.entries(ASSET_PATHS).map(async ([key, src]) => [key, await loadImage(src)]),
-  );
+  const gameAssets = Object.entries(ASSET_PATHS).map(async ([key, src]) => [
+    key,
+    await loadImage(src),
+  ]);
+  const metricAssets = Object.entries(METRIC_ICON_PATHS).map(async ([key, src]) => [
+    `metric-${key}`,
+    await loadImage(src),
+  ]);
+  const loaded = await Promise.all([...gameAssets, ...metricAssets]);
   state.assets = Object.fromEntries(loaded);
 }
 
