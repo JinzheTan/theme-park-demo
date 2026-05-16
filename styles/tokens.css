@@ -82,4 +82,5 @@
   /* Responsive viewport state set by JS. */
   --overlay-scale: 1;
   --overlay-shift: 0px;
+  --ui-scale: 1;
 }

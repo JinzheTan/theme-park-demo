@@ -39,7 +39,12 @@ export function updateHoverCard(state) {
   const card = dom.hoverCard;
   const tileCoord = state.pointer.tile;
 
-  if (!state.pointer.inside || !tileCoord || !inBounds(tileCoord.x, tileCoord.y)) {
+  if (
+    state.settings?.showHoverCard === false ||
+    !state.pointer.inside ||
+    !tileCoord ||
+    !inBounds(tileCoord.x, tileCoord.y)
+  ) {
     setClass(card, "visible", false);
     return;
   }

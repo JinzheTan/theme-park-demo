@@ -7,6 +7,7 @@ export const dom = {
   rideStatusList: document.getElementById("rideStatusList"),
   insightList: document.getElementById("insightList"),
   eventLog: document.getElementById("eventLog"),
+  settingsPanel: document.getElementById("settingsPanel"),
   headlineMetrics: document.getElementById("headlineMetrics"),
   hoverCard: document.getElementById("hoverCard"),
   floatingTools: document.getElementById("floatingTools"),

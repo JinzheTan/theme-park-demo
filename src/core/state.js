@@ -1,7 +1,9 @@
 import { ECONOMY, SIM } from "../data/tuning.js";
 import { GATE_POSITION } from "./constants.js";
+import { loadSettings } from "./settings.js";
 
 export function createState() {
+  const settings = loadSettings();
   return {
     tiles: [],
     objects: new Map(),
@@ -23,7 +25,8 @@ export function createState() {
     cleanliness: 100,
     uiClock: 0,
     uiDirty: true,
-    timeScale: 1,
+    timeScale: settings.startPaused ? 0 : 1,
+    settings,
     reachableFromGate: new Set(),
     pathTiles: [],
     orderedTiles: [],

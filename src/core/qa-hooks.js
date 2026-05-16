@@ -31,7 +31,7 @@ function getFocusedTileSummary(state) {
 
 function renderGameToText(state) {
   const rides = [...state.objects.values()]
-    .filter((o) => o.category === "ride" || o.category === "facility")
+    .filter((o) => o.category === "ride" || o.category === "facility" || o.category === "service")
     .map((object) => ({
       id: object.id,
       type: object.type,
@@ -62,6 +62,7 @@ function renderGameToText(state) {
     averageHappiness: state.averageHappiness,
     guestsInside: state.guests.length,
     guestsServed: state.guestsServed,
+    settings: { ...state.settings },
     guestStates,
     focused: getFocusedTileSummary(state),
     rides,

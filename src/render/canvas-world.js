@@ -72,6 +72,7 @@ function tileFocusDistance(state, tile) {
 
 function drawBackdrop(state, ctx, canvas) {
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight);
+  const motionClock = state.settings?.reducedMotion ? 0 : state.dayClock;
   gradient.addColorStop(0, "#114250");
   gradient.addColorStop(0.45, "#1c5f6f");
   gradient.addColorStop(1, "#0b2027");
@@ -80,7 +81,7 @@ function drawBackdrop(state, ctx, canvas) {
 
   for (let i = 0; i < 8; i += 1) {
     const x = (i / 7) * canvas.clientWidth;
-    const y = 60 + Math.sin(i * 1.3 + state.dayClock * 0.08) * 12;
+    const y = 60 + Math.sin(i * 1.3 + motionClock * 0.08) * 12;
     ctx.beginPath();
     ctx.fillStyle = "rgba(255, 245, 219, 0.09)";
     ctx.ellipse(x + 60, y, 80, 26, 0, 0, Math.PI * 2);
@@ -116,7 +117,7 @@ function drawTile(state, ctx, tile) {
   }
 
   const fadeDistance = tileFocusDistance(state, tile);
-  if (fadeDistance > 0) {
+  if (state.settings?.focusActiveArea !== false && fadeDistance > 0) {
     drawDiamondFill(state, ctx, tile.x, tile.y, "#0d2430", clamp(0.08 + fadeDistance * 0.03, 0.08, 0.28));
   }
 }
@@ -126,7 +127,7 @@ function drawObject(state, ctx, object) {
   const screen = tileToScreen(state, object.x, object.y);
   const image = state.assets[object.asset];
   const bob =
-    object.category === "ride" && object.riders.length
+    object.category === "ride" && object.riders.length && !state.settings?.reducedMotion
       ? Math.sin(state.dayClock * 2.5 + object.sparkle) * 3
       : 0;
 
@@ -149,7 +150,7 @@ function drawObject(state, ctx, object) {
 
   drawAsset(state, ctx, image, screen.x, screen.y, def.width, def.height, def.anchorY, { wobbleY: bob });
 
-  if (object.category === "ride" || object.category === "facility") {
+  if (state.settings?.showRideLabels !== false && (object.category === "ride" || object.category === "facility")) {
     const labelY = screen.y - def.height * 0.42 * state.camera.zoom;
     ctx.save();
     ctx.font = `${11 * state.camera.zoom + 6}px "Trebuchet MS", sans-serif`;
@@ -239,7 +240,11 @@ export function render(state, ctx, canvas) {
     else drawGuest(state, ctx, item.payload);
   }
 
-  if (state.pointer.tile && inBounds(state.pointer.tile.x, state.pointer.tile.y)) {
+  if (
+    state.settings?.showBuildPreview !== false &&
+    state.pointer.tile &&
+    inBounds(state.pointer.tile.x, state.pointer.tile.y)
+  ) {
     const verdict = canPlaceTool(state, state.selectedTool, state.pointer.tile.x, state.pointer.tile.y);
     drawDiamondOutline(state, ctx, state.pointer.tile.x, state.pointer.tile.y, verdict.ok ? "#f3d089" : "#ff6f65");
 

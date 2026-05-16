@@ -47,15 +47,15 @@ function mountHeadlineMetrics() {
 export function renderHeadlineMetrics(state) {
   if (!metricsMounted) mountHeadlineMetrics();
   setText(metricRefs.money.strong, `$${Math.round(state.money)}`);
-  setText(metricRefs.money.span, "Cash on hand");
+  setText(metricRefs.money.span, "Cash");
   setText(metricRefs.guests.strong, state.guests.length);
   setText(metricRefs.guests.span, "Guests inside");
   setText(metricRefs.happiness.strong, `${state.averageHappiness}%`);
-  setText(metricRefs.happiness.span, "Average happiness");
+  setText(metricRefs.happiness.span, "Happiness");
   setText(metricRefs.cleanliness.strong, `${state.cleanliness}%`);
   setText(metricRefs.cleanliness.span, "Cleanliness");
   setText(metricRefs.growth.strong, growthLabel(state.growthScore));
-  setText(metricRefs.growth.span, `Growth score ${state.growthScore}`);
+  setText(metricRefs.growth.span, `Score ${state.growthScore}`);
 }
 
 export function renderActivity(state) {
@@ -261,10 +261,10 @@ export function renderFloatingTools(state) {
   setClass(floatingRefs.tool.node, "glass--active", true);
 
   setText(floatingRefs.rides.strong, `${rideCount} rides`);
-  setText(floatingRefs.rides.span, `${state.guestsServed} guest experiences completed`);
+  setText(floatingRefs.rides.span, `${state.guestsServed} experiences completed`);
 
   setText(floatingRefs.speed.strong, state.timeScale === 0 ? "Paused" : `${state.timeScale}x speed`);
-  setText(floatingRefs.speed.span, `${state.cleanliness}% clean with live service coverage`);
+  setText(floatingRefs.speed.span, `${state.cleanliness}% clean, service active`);
 }
 
 export function renderPanels(state) {

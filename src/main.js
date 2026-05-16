@@ -11,6 +11,7 @@ import { bindToolsPanel } from "./ui/tools-panel.js";
 import { bindSpeedControls } from "./ui/speed-controls.js";
 import { initControlsPopover } from "./ui/controls-popover.js";
 import { initMobileTabs } from "./ui/mobile-tabs.js";
+import { bindSettingsPanel, applySettingsToDocument } from "./ui/settings-panel.js";
 import { bindKeyboard } from "./input/keyboard.js";
 import { bindPointer } from "./input/pointer.js";
 import { bindWheel } from "./input/wheel.js";
@@ -28,6 +29,8 @@ async function bootstrap() {
 
   bindToolsPanel(state);
   bindSpeedControls(state);
+  applySettingsToDocument(state);
+  bindSettingsPanel(state);
   initControlsPopover();
   initMobileTabs();
 
