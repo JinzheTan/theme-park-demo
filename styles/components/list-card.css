@@ -1,0 +1,77 @@
+/* Shared chassis for ride-card / event-item / insight-item / goal-item / guest-activity-item.
+ * They all share the same glass surface; only their inner layout differs. */
+
+.list-card {
+  padding: 10px 11px;
+  border-radius: 16px;
+  display: block;
+}
+
+.list-card strong {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 5px;
+  color: var(--ink-strong);
+  font-size: 0.87rem;
+  line-height: 1.2;
+}
+
+.list-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 620;
+  line-height: 1.33;
+}
+
+/* Event + insight headlines don't carry a chip — single-line strong. */
+.event-item strong,
+.insight-item strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--ink-strong);
+  font-size: 0.86rem;
+}
+
+.status-chip,
+.guest-chip,
+.goal-chip {
+  flex: 0 0 auto;
+  color: var(--gold-ink);
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.status-chip.warn,
+.guest-chip.warn,
+.goal-chip.warn {
+  color: var(--danger);
+}
+
+.insight-item.warn {
+  border-color: rgba(237, 127, 98, 0.42);
+  background:
+    linear-gradient(145deg, rgba(255, 228, 219, 0.72), rgba(255, 255, 255, 0.22)),
+    rgba(255, 240, 232, 0.36);
+}
+
+.insight-item.good {
+  border-color: rgba(54, 188, 169, 0.4);
+  background:
+    linear-gradient(145deg, rgba(223, 255, 246, 0.72), rgba(255, 255, 255, 0.22)),
+    rgba(223, 255, 246, 0.36);
+}
+
+/* Scrollable surfaces */
+.ride-status-list,
+.event-log,
+.insight-list,
+.guest-activity-list,
+.goal-list {
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  overflow: auto;
+  padding-right: 3px;
+}

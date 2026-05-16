@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wonderloop",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "http-server", "-c-1", "-p", "5173", "-s", "."],
+      "port": 5173
+    }
+  ]
+}

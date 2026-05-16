@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wonderloop Park</title>
     <link rel="icon" type="image/png" href="./assets/generated/favicon.png" />
-    <link rel="stylesheet" href="./styles.css?v=png-assets" />
+    <link rel="stylesheet" href="./styles/index.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -18,32 +18,64 @@
       </header>
 
       <main class="main-layout">
-        <section class="viewport-panel">
+        <section class="viewport-panel glass glass--depth-3">
           <canvas id="gameCanvas" aria-label="Wonderloop Park simulation"></canvas>
-          <canvas id="minimapCanvas" class="minimap"></canvas>
-          <div class="action-bar">
-            <button class="action-button" id="centerCameraButton" type="button">Fit Park</button>
-            <div class="speed-controls" id="speedControls" aria-label="Simulation speed">
-              <button class="speed-button" data-speed="0">Pause</button>
-              <button class="speed-button active" data-speed="1">1x</button>
-              <button class="speed-button" data-speed="2">2x</button>
+          <canvas id="minimapCanvas" class="minimap glass glass--depth-1"></canvas>
+
+          <div class="action-bar glass glass--depth-1">
+            <button
+              class="pill pill--action glass-hoverable"
+              id="centerCameraButton"
+              type="button"
+            >
+              Fit Park
+            </button>
+            <div
+              class="speed-controls pill-group"
+              id="speedControls"
+              aria-label="Simulation speed"
+            >
+              <button class="pill pill--toggle" data-speed="0">Pause</button>
+              <button class="pill pill--toggle active glass--active" data-speed="1">1x</button>
+              <button class="pill pill--toggle" data-speed="2">2x</button>
             </div>
           </div>
-          <div class="floating-tools" id="floatingTools"></div>
-          <div class="hover-card" id="hoverCard"></div>
-          <div class="controls-card">
-            <strong>Navigate</strong>
-            <span>WASD / Arrows</span>
-            <span>Wheel to zoom</span>
-            <span>Right drag to pan</span>
-            <span>C to fit park</span>
-            <span>F for fullscreen</span>
-            <span>1-9 / 0 quick tools</span>
+
+          <div class="controls-launcher">
+            <button
+              class="pill pill--icon controls-launcher__button glass glass--depth-1 glass-hoverable"
+              id="controlsButton"
+              type="button"
+              aria-expanded="true"
+              aria-controls="controlsPopover"
+              title="Show keyboard shortcuts (F1)"
+            >
+              ?
+            </button>
+            <aside
+              class="controls-popover glass glass--depth-1 visible"
+              id="controlsPopover"
+              role="dialog"
+              aria-label="Keyboard shortcuts"
+            >
+              <strong>Navigate</strong>
+              <span>WASD / Arrows</span>
+              <span>Wheel to zoom</span>
+              <span>Right drag to pan</span>
+              <span>C to fit park</span>
+              <span>F for fullscreen</span>
+              <span>1-9 / 0 quick tools</span>
+            </aside>
           </div>
+
+          <div class="floating-tools" id="floatingTools"></div>
+          <div class="hover-card glass glass--depth-1" id="hoverCard"></div>
         </section>
 
-        <aside class="sidebar">
-          <section class="vision-card">
+        <aside class="sidebar" data-active-tab="tools">
+          <div class="mobile-tabs" id="mobileTabs"></div>
+
+          <section class="vision-card panel glass glass--depth-3" data-tab-panel="notes">
             <img
               src="./assets/generated/hero-park.png"
               alt="Wonderloop Park visual direction illustration"
@@ -58,15 +90,15 @@
             </div>
           </section>
 
-          <section class="panel">
+          <section class="panel glass glass--depth-2" data-tab-panel="tools">
             <div class="panel-heading">
               <p class="eyebrow">Build Palette</p>
               <h2>Park Tools</h2>
             </div>
-            <div class="tool-grid" id="toolGrid"></div>
+            <div id="toolGrid"></div>
           </section>
 
-          <section class="panel">
+          <section class="panel glass glass--depth-2" data-tab-panel="activity">
             <div class="panel-heading">
               <p class="eyebrow">Guest Watch</p>
               <h2>Guest Activity</h2>
@@ -74,7 +106,7 @@
             <div class="guest-activity-list" id="guestActivityList"></div>
           </section>
 
-          <section class="panel">
+          <section class="panel glass glass--depth-2" data-tab-panel="goals">
             <div class="panel-heading">
               <p class="eyebrow">Growth Plan</p>
               <h2>Park Goals</h2>
@@ -82,7 +114,7 @@
             <div class="goal-list" id="goalList"></div>
           </section>
 
-          <section class="panel">
+          <section class="panel glass glass--depth-2" data-tab-panel="rides">
             <div class="panel-heading">
               <p class="eyebrow">Live Ops</p>
               <h2>Ride Status</h2>
@@ -90,7 +122,7 @@
             <div class="ride-status-list" id="rideStatusList"></div>
           </section>
 
-          <section class="panel">
+          <section class="panel glass glass--depth-2" data-tab-panel="notes">
             <div class="panel-heading">
               <p class="eyebrow">Operator Notes</p>
               <h2>Park Insights</h2>
@@ -98,7 +130,7 @@
             <div class="insight-list" id="insightList"></div>
           </section>
 
-          <section class="panel">
+          <section class="panel glass glass--depth-2" data-tab-panel="notes">
             <div class="panel-heading">
               <p class="eyebrow">Park Pulse</p>
               <h2>Activity Feed</h2>
@@ -109,6 +141,6 @@
       </main>
     </div>
 
-    <script type="module" src="./main.js?v=png-assets"></script>
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>

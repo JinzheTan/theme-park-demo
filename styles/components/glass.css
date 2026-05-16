@@ -1,0 +1,54 @@
+/* Single source of truth for the liquid glass aesthetic.
+ * Apply `.glass` plus one depth modifier per surface — never define
+ * gradient/blur/border directly on individual components.
+ */
+
+.glass {
+  border: 1px solid var(--glass-2-border);
+  background: var(--glass-2-bg);
+  box-shadow: var(--glass-2-shadow);
+  backdrop-filter: var(--glass-2-blur);
+  -webkit-backdrop-filter: var(--glass-2-blur);
+  transition:
+    border-color var(--dur-base) var(--ease-glass),
+    background var(--dur-base) var(--ease-glass),
+    box-shadow var(--dur-base) var(--ease-glass),
+    transform var(--dur-base) var(--ease-glass);
+}
+
+.glass--depth-1 {
+  border-color: var(--glass-1-border);
+  background: var(--glass-1-bg);
+  box-shadow: var(--glass-1-shadow);
+  backdrop-filter: var(--glass-1-blur);
+  -webkit-backdrop-filter: var(--glass-1-blur);
+}
+
+.glass--depth-3 {
+  border-color: var(--glass-3-border);
+  background: var(--glass-3-bg);
+  box-shadow: var(--glass-3-shadow);
+  backdrop-filter: var(--glass-3-blur);
+  -webkit-backdrop-filter: var(--glass-3-blur);
+}
+
+.glass--active {
+  border-color: var(--accent-border);
+  background:
+    var(--accent-bg),
+    rgba(255, 255, 255, 0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    var(--accent-glow);
+}
+
+/* Hover-friendly affordance for interactive glass surfaces (buttons, pills). */
+.glass-hoverable:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent-border);
+}
+
+.glass-hoverable:focus-visible {
+  outline: 2px solid var(--accent-border);
+  outline-offset: 2px;
+}

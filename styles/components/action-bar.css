@@ -1,0 +1,40 @@
+.action-bar {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: var(--z-overlay-pinned);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 36px);
+  padding: 6px;
+  border-radius: var(--pill-radius);
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: top left;
+}
+
+.speed-controls {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--pill-radius);
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.controls-launcher {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: var(--z-overlay-pinned);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  transform: translateX(var(--overlay-shift)) scale(var(--overlay-scale));
+  transform-origin: top right;
+}
+
+.controls-launcher__button {
+  font-size: 1.05rem;
+  font-weight: 850;
+}

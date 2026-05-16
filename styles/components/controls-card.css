@@ -1,0 +1,36 @@
+.controls-popover {
+  z-index: var(--z-overlay-pinned);
+  max-width: 200px;
+  padding: 14px 16px;
+  border-radius: 20px;
+  text-align: right;
+
+  /* enter/exit */
+  opacity: 0;
+  transform: translateY(-4px) scale(0.97);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) var(--ease-glass),
+    transform var(--dur-base) var(--ease-glass);
+}
+
+.controls-popover.visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.controls-popover strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ink-strong);
+  font-size: 0.9rem;
+}
+
+.controls-popover span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.4;
+}
