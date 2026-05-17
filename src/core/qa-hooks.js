@@ -7,6 +7,7 @@ import { setSelectedTool } from "../ui/tools-panel.js";
 import { setSimulationSpeed } from "../ui/speed-controls.js";
 import { getGuestActivityItems, getOperationsItems, getOperationsSummary } from "../ui/insights.js";
 import { growthLabel } from "../data/growth.js";
+import { clearSavedPark, getSaveMeta, loadPark, resetPark, savePark } from "./save-game.js";
 
 function getFocusedTileSummary(state) {
   const tile =
@@ -69,6 +70,7 @@ function renderGameToText(state) {
     guestsInside: state.guests.length,
     guestsServed: state.guestsServed,
     settings: { ...state.settings },
+    save: getSaveMeta(),
     operations,
     operationItems,
     guestStates,
@@ -94,6 +96,10 @@ export function installQaHooks(state, canvas, advanceTime) {
     fitCameraToPark: () => fitCameraToPark(state, canvas),
     setTool: (toolId) => setSelectedTool(toolId),
     setSpeed: (speed) => setSimulationSpeed(speed),
+    savePark: () => savePark(state),
+    loadPark: () => loadPark(state),
+    resetPark: () => resetPark(state),
+    clearSavedPark,
     snapshot: () => JSON.parse(renderGameToText(state)),
   };
 }

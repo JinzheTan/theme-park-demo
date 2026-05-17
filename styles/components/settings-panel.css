@@ -112,3 +112,35 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.settings-data-card {
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.settings-data-card__status {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.settings-data-card__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.settings-data-card__actions .pill {
+  width: 100%;
+  min-width: 0;
+}
+
+.settings-data-card__actions .pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}

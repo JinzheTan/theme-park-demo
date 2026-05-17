@@ -25,3 +25,5 @@ Next step progress:
 - Added a Park Ops panel as the next management-depth layer after Settings.
 - Park Ops reports net operations, guest load, queue pressure, service coverage, and park appeal.
 - Added an Ops mobile tab and exposed operations data in the QA text snapshot.
+- Added Park Data controls for local Save, Load, Clear, and New Park reset.
+- Exposed save/load/reset through QA hooks for repeatable verification.

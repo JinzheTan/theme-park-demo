@@ -91,10 +91,45 @@ try {
   await page.evaluate(() => window.advanceTime(30_000));
   const snapshot = await page.evaluate(() => window.__wonderloop.snapshot());
 
-  const required = ["mode", "day", "money", "growthScore", "growthLabel", "guestStates", "rides", "recentEvents"];
+  const required = [
+    "mode",
+    "day",
+    "money",
+    "growthScore",
+    "growthLabel",
+    "guestStates",
+    "rides",
+    "recentEvents",
+    "operations",
+    "operationItems",
+    "save",
+  ];
   const missing = required.filter((k) => !(k in snapshot));
   if (missing.length) throw new Error(`Snapshot missing keys: ${missing.join(", ")}`);
   if (snapshot.rides.length < 3) throw new Error(`Expected >=3 rides/facilities, got ${snapshot.rides.length}`);
+  if (snapshot.operationItems.length < 5) {
+    throw new Error(`Expected >=5 operation items, got ${snapshot.operationItems.length}`);
+  }
+
+  await page.evaluate(() => window.__wonderloop.clearSavedPark());
+  const savedMeta = await page.evaluate(() => window.__wonderloop.savePark());
+  if (!savedMeta?.savedAt) throw new Error("Save did not return metadata");
+  const savedMoney = await page.evaluate(() => window.__wonderloop.state.money);
+  await page.evaluate(() => {
+    window.__wonderloop.state.money = 123;
+    window.__wonderloop.state.guestsServed = 999;
+  });
+  const loadedMeta = await page.evaluate(() => window.__wonderloop.loadPark());
+  const loadedState = await page.evaluate(() => ({
+    money: window.__wonderloop.state.money,
+    guestsServed: window.__wonderloop.state.guestsServed,
+  }));
+  if (!loadedMeta?.savedAt || Math.round(loadedState.money) !== Math.round(savedMoney)) {
+    throw new Error("Saved park did not restore money");
+  }
+  if (loadedState.guestsServed === 999) {
+    throw new Error("Saved park did not restore guest service count");
+  }
 
   // Pause and verify that guests do not advance.
   await page.evaluate(() => window.__wonderloop.setSpeed(0));

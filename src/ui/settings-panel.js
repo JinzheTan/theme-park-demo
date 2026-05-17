@@ -1,7 +1,10 @@
 import { DEFAULT_SETTINGS, normalizeSettings, saveSettings } from "../core/settings.js";
 import { markUiDirty } from "../core/state.js";
+import { clearSavedPark, getSaveMeta, loadPark, resetPark, savePark } from "../core/save-game.js";
 import { dom } from "./dom.js";
 import { el, setClass, setText } from "./diff.js";
+import { setSimulationSpeed } from "./speed-controls.js";
+import { setSelectedTool } from "./tools-panel.js";
 
 const SETTING_SECTIONS = [
   {
@@ -33,6 +36,9 @@ const SETTING_SECTIONS = [
 let mounted = false;
 let stateRef = null;
 let controlRefs = new Map();
+let saveStatusNode = null;
+let loadButton = null;
+let clearButton = null;
 
 function applySettingClasses(settings) {
   document.documentElement.style.setProperty("--ui-scale", (settings.uiScale / 100).toFixed(2));
@@ -121,6 +127,41 @@ function mountSettingsPanel(state) {
     host.appendChild(sectionNode);
   }
 
+  const dataSection = el("section", "settings-section");
+  const dataHeading = el("p", "settings-section__heading eyebrow");
+  setText(dataHeading, "Park Data");
+  dataSection.appendChild(dataHeading);
+
+  const dataCard = el("div", "settings-data-card");
+  saveStatusNode = el("span", "settings-data-card__status");
+
+  const actions = el("div", "settings-data-card__actions");
+  const saveButton = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
+  loadButton = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
+  clearButton = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
+  const resetParkButton = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
+  saveButton.type = "button";
+  loadButton.type = "button";
+  clearButton.type = "button";
+  resetParkButton.type = "button";
+  saveButton.dataset.savePark = "true";
+  loadButton.dataset.loadPark = "true";
+  clearButton.dataset.clearSave = "true";
+  resetParkButton.dataset.resetPark = "true";
+  setText(saveButton, "Save Park");
+  setText(loadButton, "Load");
+  setText(clearButton, "Clear");
+  setText(resetParkButton, "New Park");
+  actions.appendChild(saveButton);
+  actions.appendChild(loadButton);
+  actions.appendChild(clearButton);
+  actions.appendChild(resetParkButton);
+
+  dataCard.appendChild(saveStatusNode);
+  dataCard.appendChild(actions);
+  dataSection.appendChild(dataCard);
+  host.appendChild(dataSection);
+
   const footer = el("div", "settings-footer");
   const reset = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
   reset.type = "button";
@@ -156,14 +197,64 @@ function handleSettingsInput(event) {
 }
 
 function handleSettingsClick(event) {
+  if (!stateRef) return;
+
+  const saveTarget = event.target.closest("[data-save-park]");
+  if (saveTarget) {
+    savePark(stateRef);
+    renderSaveControls();
+    return;
+  }
+
+  const loadTarget = event.target.closest("[data-load-park]");
+  if (loadTarget) {
+    if (loadPark(stateRef)) {
+      setSelectedTool(stateRef.selectedTool);
+      setSimulationSpeed(stateRef.timeScale);
+      renderSaveControls();
+    }
+    return;
+  }
+
+  const clearTarget = event.target.closest("[data-clear-save]");
+  if (clearTarget) {
+    clearSavedPark();
+    renderSaveControls();
+    return;
+  }
+
+  const resetParkTarget = event.target.closest("[data-reset-park]");
+  if (resetParkTarget) {
+    if (!window.confirm("Start a new park from the starter layout? Your saved park stays untouched.")) return;
+    resetPark(stateRef);
+    setSelectedTool("path");
+    setSimulationSpeed(stateRef.timeScale);
+    renderSaveControls();
+    return;
+  }
+
   const target = event.target.closest("[data-settings-reset]");
-  if (!target || !stateRef) return;
+  if (!target) return;
 
   stateRef.settings = { ...DEFAULT_SETTINGS };
   applySettingClasses(stateRef.settings);
   saveSettings(stateRef.settings);
   renderSettingsControls(stateRef);
   markUiDirty();
+}
+
+function renderSaveControls() {
+  const meta = getSaveMeta();
+  if (saveStatusNode) {
+    setText(
+      saveStatusNode,
+      meta
+        ? `Saved ${meta.label}. Week ${meta.day}, $${meta.money}, score ${meta.growthScore}.`
+        : "No saved park in this browser.",
+    );
+  }
+  if (loadButton) loadButton.disabled = !meta;
+  if (clearButton) clearButton.disabled = !meta;
 }
 
 export function renderSettingsControls(state) {
@@ -176,6 +267,7 @@ export function renderSettingsControls(state) {
     setText(ref.value, valueLabel(ref.control, value));
     setClass(ref.value, "settings-value--muted", ref.control.type !== "range" && !value);
   }
+  renderSaveControls();
 }
 
 export function bindSettingsPanel(state) {
