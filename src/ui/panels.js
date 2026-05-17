@@ -4,7 +4,7 @@ import { METRIC_ICON_PATHS } from "../data/assets.js";
 import { TOOLS } from "../data/tools.js";
 import { growthLabel } from "../data/growth.js";
 import { isObjectOperational } from "../sim/park.js";
-import { getGuestActivityItems, getGoalItems, buildInsights } from "./insights.js";
+import { getGuestActivityItems, getGoalItems, buildInsights, getOperationsItems } from "./insights.js";
 
 let metricsMounted = false;
 let metricRefs = {};
@@ -185,6 +185,39 @@ export function renderRideStatus(state) {
   );
 }
 
+export function renderOperations(state) {
+  renderList(
+    dom.operationsPanel,
+    getOperationsItems(state),
+    (item) => item.key,
+    () => {
+      const node = el("article", "operation-card list-card glass glass--depth-2");
+      const head = el("strong");
+      const chip = el("span", "operation-chip");
+      head.appendChild(document.createTextNode(""));
+      head.appendChild(chip);
+      const detail = el("span");
+      const track = el("span", "operation-meter");
+      const fill = el("span");
+      track.appendChild(fill);
+      node.appendChild(head);
+      node.appendChild(detail);
+      node.appendChild(track);
+      node._refs = { head: head.firstChild, chip, detail, fill };
+      return node;
+    },
+    (item, node) => {
+      node._refs.head.nodeValue = item.label;
+      setText(node._refs.chip, item.chip);
+      setText(node._refs.detail, item.detail);
+      setClass(node, "warn", item.tone === "warn");
+      setClass(node, "good", item.tone === "good");
+      setClass(node._refs.chip, "warn", item.tone === "warn");
+      node._refs.fill.style.width = `${Math.round(item.value * 100)}%`;
+    },
+  );
+}
+
 export function renderInsights(state) {
   renderList(
     dom.insightList,
@@ -271,6 +304,7 @@ export function renderPanels(state) {
   renderHeadlineMetrics(state);
   renderActivity(state);
   renderGoals(state);
+  renderOperations(state);
   renderRideStatus(state);
   renderInsights(state);
   renderEventLog(state);

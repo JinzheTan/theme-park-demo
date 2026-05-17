@@ -25,6 +25,7 @@
 
   .sidebar[data-active-tab="tools"] [data-tab-panel="tools"],
   .sidebar[data-active-tab="settings"] [data-tab-panel="settings"],
+  .sidebar[data-active-tab="ops"] [data-tab-panel="ops"],
   .sidebar[data-active-tab="activity"] [data-tab-panel="activity"],
   .sidebar[data-active-tab="goals"] [data-tab-panel="goals"],
   .sidebar[data-active-tab="rides"] [data-tab-panel="rides"],

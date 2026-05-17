@@ -20,3 +20,8 @@ Verification:
 - `npm run lint:dead` passed.
 - `npm run qa` passed once after the QA fixes: QA OK, 8 guests inside, growth score 282, rides 3.
 - A later final QA rerun was blocked by environment escalation quota, not by app/test failure.
+
+Next step progress:
+- Added a Park Ops panel as the next management-depth layer after Settings.
+- Park Ops reports net operations, guest load, queue pressure, service coverage, and park appeal.
+- Added an Ops mobile tab and exposed operations data in the QA text snapshot.

@@ -8,6 +8,7 @@ export const dom = {
   insightList: document.getElementById("insightList"),
   eventLog: document.getElementById("eventLog"),
   settingsPanel: document.getElementById("settingsPanel"),
+  operationsPanel: document.getElementById("operationsPanel"),
   headlineMetrics: document.getElementById("headlineMetrics"),
   hoverCard: document.getElementById("hoverCard"),
   floatingTools: document.getElementById("floatingTools"),

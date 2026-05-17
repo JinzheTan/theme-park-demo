@@ -54,7 +54,8 @@
   .event-log,
   .insight-list,
   .guest-activity-list,
-  .goal-list { max-height: none; }
+  .goal-list,
+  .operations-panel { max-height: none; }
 }
 
 @media (max-width: 520px) {

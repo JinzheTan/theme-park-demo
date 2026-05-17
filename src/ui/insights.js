@@ -2,6 +2,28 @@ import { GROWTH_MILESTONES, growthLabel } from "../data/growth.js";
 import { SIM } from "../data/tuning.js";
 import { isObjectOperational } from "../sim/park.js";
 
+function operationalObjects(state) {
+  return [...state.objects.values()].filter(
+    (object) => object.category === "ride" || object.category === "facility" || object.category === "service",
+  );
+}
+
+function guestCapacity(state, rideCount, sceneryScore) {
+  return Math.round(
+    Math.max(
+      SIM.GUEST_CAP_RANGE[0],
+      Math.min(
+        SIM.GUEST_CAP_RANGE[1],
+        SIM.GUEST_CAP_BASE +
+          rideCount * SIM.GUEST_CAP_PER_RIDE +
+          Math.floor(sceneryScore / 5) +
+          Math.round(state.cleanliness * 0.08) +
+          Math.round(state.averageHappiness * 0.06),
+      ),
+    ),
+  );
+}
+
 export function getGuestActivityItems(state) {
   const hungry = state.guests.filter((guest) => guest.hunger >= 58).length;
   const delighted = state.guests.filter((guest) => guest.happiness >= 86).length;
@@ -166,4 +188,90 @@ export function buildInsights(state) {
   });
 
   return insights.slice(0, 4);
+}
+
+export function getOperationsSummary(state) {
+  const objects = [...state.objects.values()];
+  const rides = objects.filter((object) => object.category === "ride");
+  const facilities = objects.filter((object) => object.category === "facility");
+  const services = objects.filter((object) => object.category === "service");
+  const operatingObjects = operationalObjects(state);
+  const offline = operatingObjects.filter((object) => !isObjectOperational(state, object));
+  const queueObjects = objects.filter(
+    (object) => object.category === "ride" || object.category === "facility",
+  );
+  const queuedGuests = queueObjects.reduce((sum, object) => sum + object.queue.length, 0);
+  const queueLimit = queueObjects.reduce((sum, object) => sum + (object.stats.queueLimit ?? 0), 0);
+  const cycleCapacity = queueObjects.reduce((sum, object) => sum + (object.stats.capacity ?? 0), 0);
+  const sceneryScore = objects.reduce((sum, object) => sum + (object.stats.scenery ?? 0), 0);
+  const litter = state.tiles.flat().reduce((sum, tile) => sum + tile.litter, 0);
+  const netResult = state.totalRevenue - state.totalUpkeep;
+  const capacity = guestCapacity(state, rides.length, sceneryScore);
+
+  return {
+    netResult,
+    queueLoad: queueLimit ? queuedGuests / queueLimit : 0,
+    guestLoad: capacity ? state.guests.length / capacity : 0,
+    queuedGuests,
+    queueLimit,
+    cycleCapacity,
+    capacity,
+    rideCount: rides.length,
+    facilityCount: facilities.length,
+    serviceCount: services.length,
+    offlineCount: offline.length,
+    pathCount: state.pathTiles.length,
+    sceneryScore,
+    litter,
+  };
+}
+
+export function getOperationsItems(state) {
+  const summary = getOperationsSummary(state);
+  const activeServices = summary.serviceCount - summary.offlineCount;
+  const queuePercent = Math.round(summary.queueLoad * 100);
+  const netPrefix = summary.netResult >= 0 ? "+" : "";
+
+  return [
+    {
+      key: "finance",
+      label: "Net operations",
+      chip: `${netPrefix}$${Math.round(summary.netResult)}`,
+      tone: summary.netResult < 0 ? "warn" : "good",
+      value: Math.min(1, Math.max(0, (summary.netResult + 300) / 1200)),
+      detail: `Revenue $${Math.round(state.totalRevenue)} against $${Math.round(state.totalUpkeep)} upkeep.`,
+    },
+    {
+      key: "capacity",
+      label: "Guest load",
+      chip: `${state.guests.length} / ${summary.capacity}`,
+      tone: summary.guestLoad > 0.85 ? "warn" : "good",
+      value: Math.min(1, summary.guestLoad),
+      detail: `${summary.rideCount} rides, ${summary.facilityCount} food stops, ${summary.cycleCapacity} seats per dispatch.`,
+    },
+    {
+      key: "queues",
+      label: "Queue pressure",
+      chip: `${queuePercent}%`,
+      tone: summary.queueLoad > SIM.QUEUE_PRESSURE_RATIO ? "warn" : "good",
+      value: Math.min(1, summary.queueLoad),
+      detail: `${summary.queuedGuests} guests waiting across ${summary.queueLimit || 0} available queue slots.`,
+    },
+    {
+      key: "coverage",
+      label: "Service coverage",
+      chip: `${activeServices} / ${summary.serviceCount}`,
+      tone: state.cleanliness < 74 || summary.offlineCount > 0 ? "warn" : "good",
+      value: state.cleanliness / 100,
+      detail: `${state.cleanliness}% clean with ${summary.litter} litter piles and ${summary.pathCount} path tiles.`,
+    },
+    {
+      key: "appeal",
+      label: "Park appeal",
+      chip: growthLabel(state.growthScore),
+      tone: state.averageHappiness < 68 ? "warn" : "good",
+      value: Math.min(1, state.growthScore / 520),
+      detail: `${summary.sceneryScore} scenery value, ${state.averageHappiness}% happiness, ${state.guestsServed} served.`,
+    },
+  ];
 }

@@ -5,7 +5,7 @@ import { tileToScreen, screenToTile } from "../util/iso.js";
 import { focusCameraOn, fitCameraToPark } from "../render/camera.js";
 import { setSelectedTool } from "../ui/tools-panel.js";
 import { setSimulationSpeed } from "../ui/speed-controls.js";
-import { getGuestActivityItems } from "../ui/insights.js";
+import { getGuestActivityItems, getOperationsItems, getOperationsSummary } from "../ui/insights.js";
 import { growthLabel } from "../data/growth.js";
 
 function getFocusedTileSummary(state) {
@@ -47,6 +47,12 @@ function renderGameToText(state) {
     label: entry.label,
     value: entry.value,
   }));
+  const operations = getOperationsSummary(state);
+  const operationItems = getOperationsItems(state).map((entry) => ({
+    label: entry.label,
+    chip: entry.chip,
+    tone: entry.tone,
+  }));
 
   return JSON.stringify({
     mode: "play",
@@ -63,6 +69,8 @@ function renderGameToText(state) {
     guestsInside: state.guests.length,
     guestsServed: state.guestsServed,
     settings: { ...state.settings },
+    operations,
+    operationItems,
     guestStates,
     focused: getFocusedTileSummary(state),
     rides,

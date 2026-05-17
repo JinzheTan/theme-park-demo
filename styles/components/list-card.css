@@ -36,7 +36,8 @@
 
 .status-chip,
 .guest-chip,
-.goal-chip {
+.goal-chip,
+.operation-chip {
   flex: 0 0 auto;
   color: var(--gold-ink);
   font-weight: 850;
@@ -45,22 +46,43 @@
 
 .status-chip.warn,
 .guest-chip.warn,
-.goal-chip.warn {
+.goal-chip.warn,
+.operation-chip.warn {
   color: var(--danger);
 }
 
-.insight-item.warn {
+.insight-item.warn,
+.operation-card.warn {
   border-color: rgba(237, 127, 98, 0.42);
   background:
     linear-gradient(145deg, rgba(255, 228, 219, 0.72), rgba(255, 255, 255, 0.22)),
     rgba(255, 240, 232, 0.36);
 }
 
-.insight-item.good {
+.insight-item.good,
+.operation-card.good {
   border-color: rgba(54, 188, 169, 0.4);
   background:
     linear-gradient(145deg, rgba(223, 255, 246, 0.72), rgba(255, 255, 255, 0.22)),
     rgba(223, 255, 246, 0.36);
+}
+
+.operation-meter {
+  height: 7px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: var(--pill-radius);
+  background: rgba(23, 53, 61, 0.13);
+}
+
+.operation-meter span {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--mint), var(--gold));
+}
+
+.operation-card.warn .operation-meter span {
+  background: linear-gradient(90deg, var(--coral), var(--gold));
 }
 
 /* Scrollable surfaces */
@@ -68,7 +90,8 @@
 .event-log,
 .insight-list,
 .guest-activity-list,
-.goal-list {
+.goal-list,
+.operations-panel {
   display: grid;
   gap: 8px;
   max-height: 220px;
