@@ -4,6 +4,7 @@ import { clamp } from "../util/math.js";
 import { tileKey, inBounds } from "../util/grid.js";
 import { tileToScreen } from "../util/iso.js";
 import { canPlaceTool } from "../sim/placement.js";
+import { getAtmosphereModifiers } from "../sim/atmosphere.js";
 
 function drawAsset(state, ctx, image, screenX, screenY, width, height, anchorY, options = {}) {
   if (!image) return;
@@ -212,6 +213,48 @@ function drawGuest(state, ctx, guest) {
   ctx.restore();
 }
 
+// Full-screen wash that sells time-of-day + weather without touching any of
+// the sprite art. Night dims toward blue, dusk warms, rain cools and streaks.
+function drawAtmosphere(state, ctx, canvas) {
+  const atmosphere = getAtmosphereModifiers(state);
+  if (!atmosphere.active) return;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+
+  if (atmosphere.phase.overlay) {
+    ctx.save();
+    ctx.fillStyle = atmosphere.phase.overlay;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  if (atmosphere.weather.tint) {
+    ctx.save();
+    ctx.fillStyle = atmosphere.weather.tint;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  if (atmosphere.weather.id === "rain") {
+    const reduced = Boolean(state.settings?.reducedMotion);
+    const drift = reduced ? 0 : (state.timeOfDay * 4200) % 60;
+    ctx.save();
+    ctx.strokeStyle = "rgba(214, 230, 245, 0.32)";
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 70; i += 1) {
+      const baseX = (i * 137.5) % width;
+      const baseY = (i * 89.3) % height;
+      const x = (baseX + drift * 0.6) % width;
+      const y = (baseY + drift * 2.4) % height;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - 4, y + 14);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
 export function render(state, ctx, canvas) {
   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
   drawBackdrop(state, ctx, canvas);
@@ -239,6 +282,8 @@ export function render(state, ctx, canvas) {
     if (item.kind === "object") drawObject(state, ctx, item.payload);
     else drawGuest(state, ctx, item.payload);
   }
+
+  drawAtmosphere(state, ctx, canvas);
 
   if (
     state.settings?.showBuildPreview !== false &&

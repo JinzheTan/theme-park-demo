@@ -4,6 +4,15 @@ An isometric, browser-based theme-park simulation. Build paths, place rides, wat
 
 > Vanilla JS, no build step. Open `index.html` or run `npm run dev`.
 
+## Features
+
+- **Live park sim** — guests pathfind from the gate to rides and food, queue, ride, drop litter, and leave; janitors keep it clean; the economy runs on tickets, upkeep, and weekly dividends.
+- **Day/night + weather** — a rolling time-of-day and rotating weather (sunny → cloudy → overcast → rain) that nudge attendance, mood, and appetite, with a canvas tint and rain, shown live in the HUD.
+- **Achievements** — 14 account-level badges that persist across parks, with celebratory toasts and chimes.
+- **Growth milestones** — per-park tiers (Budding → Destination) that pay expansion grants.
+- **Autosave & restore** — a silent autosave brings your park back after a refresh; a manual save slot lives alongside it.
+- **Sound** — all SFX are synthesized in-browser (no audio files). Toggleable, like every comfort/view option, in **Settings**.
+
 ## Quick start
 
 ```bash

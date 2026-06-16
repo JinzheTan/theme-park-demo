@@ -4,7 +4,10 @@ import { METRIC_ICON_PATHS } from "../data/assets.js";
 import { TOOLS } from "../data/tools.js";
 import { growthLabel } from "../data/growth.js";
 import { isObjectOperational } from "../sim/park.js";
+import { getAtmosphereModifiers } from "../sim/atmosphere.js";
 import { getGuestActivityItems, getGoalItems, buildInsights, getOperationsItems } from "./insights.js";
+import { renderAchievements } from "./achievements-panel.js";
+import { flushToasts } from "./toast.js";
 
 let metricsMounted = false;
 let metricRefs = {};
@@ -40,6 +43,7 @@ function mountHeadlineMetrics() {
     happiness: make("happiness", "Average happiness"),
     cleanliness: make("cleanliness", "Cleanliness"),
     growth: make(null, "Park growth"),
+    atmosphere: make(null, "Time and weather"),
   };
   metricsMounted = true;
 }
@@ -56,6 +60,15 @@ export function renderHeadlineMetrics(state) {
   setText(metricRefs.cleanliness.span, "Cleanliness");
   setText(metricRefs.growth.strong, growthLabel(state.growthScore));
   setText(metricRefs.growth.span, `Score ${state.growthScore}`);
+
+  const atmosphere = getAtmosphereModifiers(state);
+  if (atmosphere.active) {
+    setText(metricRefs.atmosphere.strong, `${atmosphere.phase.icon} ${atmosphere.phase.label}`);
+    setText(metricRefs.atmosphere.span, `${atmosphere.weather.icon} ${atmosphere.weather.label}`);
+  } else {
+    setText(metricRefs.atmosphere.strong, "Sandbox");
+    setText(metricRefs.atmosphere.span, "Time & weather off");
+  }
 }
 
 export function renderActivity(state) {
@@ -293,7 +306,7 @@ export function renderFloatingTools(state) {
   setText(floatingRefs.tool.span, currentTool?.detail ?? "");
   setClass(floatingRefs.tool.node, "glass--active", true);
 
-  setText(floatingRefs.rides.strong, `${rideCount} rides`);
+  setText(floatingRefs.rides.strong, `${rideCount} ride${rideCount === 1 ? "" : "s"}`);
   setText(floatingRefs.rides.span, `${state.guestsServed} experiences completed`);
 
   setText(floatingRefs.speed.strong, state.timeScale === 0 ? "Paused" : `${state.timeScale}x speed`);
@@ -307,7 +320,9 @@ export function renderPanels(state) {
   renderOperations(state);
   renderRideStatus(state);
   renderInsights(state);
+  renderAchievements(state);
   renderEventLog(state);
   renderFloatingTools(state);
+  flushToasts(state);
   state.uiDirty = false;
 }

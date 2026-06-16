@@ -2,6 +2,7 @@ import { ECONOMY, SIM, GUEST } from "../data/tuning.js";
 import { clamp } from "../util/math.js";
 import { getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
+import { playSfx } from "../core/audio.js";
 import { isObjectOperational } from "./park.js";
 import { addEvent } from "./events.js";
 
@@ -96,6 +97,7 @@ export function updateObjects(state, deltaTime) {
       const revenue = boarded.length * object.stats.ticket;
       state.money += revenue;
       state.totalRevenue += revenue;
+      playSfx("dispatch");
 
       for (const guestId of boarded) {
         const guest = state.guests.find((entry) => entry.id === guestId);

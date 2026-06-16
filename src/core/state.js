@@ -1,6 +1,7 @@
 import { ECONOMY, SIM } from "../data/tuning.js";
 import { GATE_POSITION } from "./constants.js";
 import { loadSettings } from "./settings.js";
+import { loadUnlockedAchievements } from "./progress-store.js";
 
 export function createState() {
   const settings = loadSettings();
@@ -21,8 +22,18 @@ export function createState() {
     totalRevenue: 0,
     totalUpkeep: 0,
     weeklyProfit: 0,
+    weekRevenueMark: 0,
+    weekUpkeepMark: 0,
     averageHappiness: 82,
     cleanliness: 100,
+    timeOfDay: 0.32,
+    weather: "sunny",
+    weatherTimer: 30,
+    placedByPlayer: 0,
+    peakGuests: 0,
+    autoSaveClock: 0,
+    unlockedAchievements: loadUnlockedAchievements(),
+    pendingToasts: [],
     uiClock: 0,
     uiDirty: true,
     timeScale: settings.startPaused ? 0 : 1,

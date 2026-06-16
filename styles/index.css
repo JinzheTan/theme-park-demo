@@ -17,6 +17,8 @@
 @import "./components/tool-grid.css";
 @import "./components/settings-panel.css";
 @import "./components/list-card.css";
+@import "./components/achievements.css";
+@import "./components/toast.css";
 @import "./components/mobile-tabs.css";
 
 @import "./responsive.css";

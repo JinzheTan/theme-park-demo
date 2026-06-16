@@ -6,6 +6,7 @@ import { getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
 import { isObjectOperational } from "./park.js";
 import { pathfind, randomWalkableTile } from "./pathfinding.js";
+import { getAtmosphereModifiers } from "./atmosphere.js";
 import { addEvent } from "./events.js";
 
 export function createGuest(state) {
@@ -56,6 +57,8 @@ export function chooseGuestDestination(state, guest) {
 
   const rides = accessibleObjects.filter((object) => object.category === "ride");
   const food = accessibleObjects.filter((object) => object.category === "facility");
+  const atmosphere = getAtmosphereModifiers(state);
+  const foodPriorityThreshold = GUEST.HUNGER_TO_PRIORITIZE_FOOD - atmosphere.foodPull;
 
   if (
     guest.activities >= rand(...GUEST.ACTIVITIES_BEFORE_LEAVING) ||
@@ -72,11 +75,11 @@ export function chooseGuestDestination(state, guest) {
 
   let target = null;
 
-  if (guest.hunger > GUEST.HUNGER_TO_PRIORITIZE_FOOD && food.length) {
+  if (guest.hunger > foodPriorityThreshold && food.length) {
     target = food
       .map((object) => ({
         object,
-        score: 30 - object.queue.length * 4 - manhattan(object.entry, guest),
+        score: 30 + atmosphere.foodPull - object.queue.length * 4 - manhattan(object.entry, guest),
       }))
       .sort((a, b) => b.score - a.score)[0]?.object;
   }
@@ -145,6 +148,7 @@ export function leavePark(state, guest) {
 }
 
 export function updateGuests(state, deltaTime) {
+  const atmosphere = getAtmosphereModifiers(state);
   for (const guest of [...state.guests]) {
     guest.hunger = clamp(guest.hunger + deltaTime * GUEST.HUNGER_RATE, 0, 100);
     guest.patience = clamp(guest.patience - deltaTime * GUEST.PATIENCE_DECAY, 0, 100);
@@ -152,7 +156,8 @@ export function updateGuests(state, deltaTime) {
     guest.happiness = clamp(
       guest.happiness
         - deltaTime * (guest.hunger > 72 ? GUEST.HAPPY_DECAY_HUNGRY : GUEST.HAPPY_DECAY_BASE)
-        - deltaTime * (100 - state.cleanliness) * 0.01,
+        - deltaTime * (100 - state.cleanliness) * 0.01
+        + deltaTime * atmosphere.happyDrift,
       0,
       100,
     );

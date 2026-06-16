@@ -29,6 +29,7 @@
   .sidebar[data-active-tab="activity"] [data-tab-panel="activity"],
   .sidebar[data-active-tab="goals"] [data-tab-panel="goals"],
   .sidebar[data-active-tab="rides"] [data-tab-panel="rides"],
+  .sidebar[data-active-tab="awards"] [data-tab-panel="awards"],
   .sidebar[data-active-tab="notes"] [data-tab-panel="notes"] {
     display: block;
   }

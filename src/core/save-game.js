@@ -5,7 +5,9 @@ import { computeParkMetrics } from "../sim/economy.js";
 import { addEvent } from "../sim/events.js";
 
 const SAVE_KEY = "wonderloop-park-save-v1";
+const AUTOSAVE_KEY = "wonderloop-park-autosave-v1";
 const SAVE_VERSION = 1;
+const AUTOSAVE_INTERVAL_S = 18;
 
 const STATE_KEYS = [
   "money",
@@ -20,8 +22,15 @@ const STATE_KEYS = [
   "totalRevenue",
   "totalUpkeep",
   "weeklyProfit",
+  "weekRevenueMark",
+  "weekUpkeepMark",
   "averageHappiness",
   "cleanliness",
+  "timeOfDay",
+  "weather",
+  "weatherTimer",
+  "placedByPlayer",
+  "peakGuests",
   "nextObjectId",
   "nextGuestId",
   "nextEventId",
@@ -178,6 +187,7 @@ export function loadPark(state) {
   if (save.version !== SAVE_VERSION || !save.state) return null;
   applyPlainState(state, save.state);
   addEvent(state, "Park loaded", "Saved park state restored from this browser.");
+  if (state.settings?.autoSave !== false) writeAutoSave(state);
   return getSaveMeta();
 }
 
@@ -190,10 +200,60 @@ export function resetPark(state) {
   seedPark(state);
   computeParkMetrics(state);
   addEvent(state, "Fresh start", "Park reset to the starter layout.");
+  if (state.settings?.autoSave !== false) writeAutoSave(state);
   markUiDirty();
 }
 
 export function clearSavedPark() {
   window.localStorage.removeItem(SAVE_KEY);
   return null;
+}
+
+// --- Autosave -------------------------------------------------------------
+// A silent, separate slot so the park survives an accidental refresh without
+// the player ever pressing Save. Independent from the manual save slot above.
+
+export function hasAutoSave() {
+  try {
+    const raw = window.localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return false;
+    const save = JSON.parse(raw);
+    return save.version === SAVE_VERSION && Boolean(save.state);
+  } catch {
+    return false;
+  }
+}
+
+export function writeAutoSave(state) {
+  try {
+    window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(serializePark(state)));
+  } catch {
+    // Storage may be full or blocked; the live session is unaffected.
+  }
+}
+
+// Wall-clock cadence so progress is captured even while the sim is paused.
+export function autoSaveTick(state, realDeltaSeconds) {
+  if (state.settings?.autoSave === false) return;
+  state.autoSaveClock += realDeltaSeconds;
+  if (state.autoSaveClock < AUTOSAVE_INTERVAL_S) return;
+  state.autoSaveClock = 0;
+  writeAutoSave(state);
+}
+
+export function restoreAutoSave(state) {
+  try {
+    const raw = window.localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return false;
+    const save = JSON.parse(raw);
+    if (save.version !== SAVE_VERSION || !save.state) return false;
+    applyPlainState(state, save.state);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearAutoSave() {
+  window.localStorage.removeItem(AUTOSAVE_KEY);
 }

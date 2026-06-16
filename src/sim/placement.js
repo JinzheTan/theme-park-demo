@@ -3,6 +3,7 @@ import { ECONOMY } from "../data/tuning.js";
 import { PROTECTED_PATH_KEYS } from "../core/constants.js";
 import { tileKey, getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
+import { playSfx } from "../core/audio.js";
 import {
   addObject,
   removeObject,
@@ -77,7 +78,11 @@ export function useToolAt(state, x, y) {
 
   if (toolId === "remove") {
     const tile = getTile(state, x, y);
-    if (tile.objectId) return removeObject(state, state.objects.get(tile.objectId));
+    if (tile.objectId) {
+      const removed = removeObject(state, state.objects.get(tile.objectId));
+      if (removed) playSfx("remove");
+      return removed;
+    }
     if (tile.path) {
       tile.path = false;
       tile.litter = 0;
@@ -93,6 +98,8 @@ export function useToolAt(state, x, y) {
   const object = addObject(state, toolId, x, y);
   if (object) {
     const def = OBJECT_DEFS[toolId];
+    state.placedByPlayer += 1;
+    playSfx("place");
     addEvent(state, "New addition", `${def.label} opened and guests are already reacting.`);
     return true;
   }

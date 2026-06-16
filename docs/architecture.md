@@ -106,17 +106,28 @@ sequenceDiagram
 
   RAF->>Loop: timestamp
   Loop->>Loop: updateCamera(realDt)
+  Loop->>Sim: updateAtmosphere(simDt)
   Loop->>Sim: updateEconomy(simDt)
   Loop->>Sim: updateGuests(simDt)
   Loop->>Sim: updateObjects(simDt)
   Loop->>Sim: computeParkMetrics()
   Loop->>Sim: maybeAwardMilestones()
+  Loop->>Sim: evaluateAchievements()
+  Loop->>Loop: autoSaveTick(realDt)
   Loop->>UI: renderPanels() if dirty or 0.2s elapsed
   Loop->>World: render()
   Loop->>Mini: renderMinimap()
 ```
 
-`realDt` clocks the camera & UI throttle; `simDt = realDt * timeScale` drives the simulation. Setting `timeScale = 0` freezes the world while the camera and UI still respond.
+`realDt` clocks the camera, UI throttle, and the wall-clock autosave; `simDt = realDt * timeScale` drives the simulation. Setting `timeScale = 0` freezes the world (including time-of-day and weather) while the camera, UI, achievement checks, and autosave still respond.
+
+## Living world & meta-progression
+
+Three subsystems sit on top of the core sim:
+
+- **Atmosphere** ([`data/atmosphere.js`](../src/data/atmosphere.js) + [`sim/atmosphere.js`](../src/sim/atmosphere.js)) — a day/night clock and rotating weather. `getAtmosphereModifiers(state)` is the single source of truth that bends spawn rate, guest mood, and food appetite, and feeds the canvas tint/rain pass plus the HUD pill.
+- **Achievements** ([`data/achievements.js`](../src/data/achievements.js) + [`sim/achievements.js`](../src/sim/achievements.js)) — account-level badges persisted via [`core/progress-store.js`](../src/core/progress-store.js), independent of the park save so "New Park" never wipes them. Unlocks raise a toast ([`ui/toast.js`](../src/ui/toast.js)) and a chime.
+- **Persistence** ([`core/save-game.js`](../src/core/save-game.js)) — a manual save slot plus a silent autosave slot restored on boot. [`core/audio.js`](../src/core/audio.js) synthesizes all SFX with no audio assets.
 
 ## Layer rules
 
@@ -155,6 +166,10 @@ A single, plain JS object exported from [`src/core/state.js`](../src/core/state.
 | Add or rename a tool / shortcut | `src/data/tools.js` |
 | Tune hunger, patience, spawn rates | `src/data/tuning.js` |
 | Change milestone thresholds / rewards | `src/data/growth.js` |
+| Add or retune an achievement | `src/data/achievements.js` |
+| Tune day length, weather odds & effects | `src/data/atmosphere.js` |
+| Change a sound cue | `src/core/audio.js` |
+| Adjust autosave cadence | `src/core/save-game.js` (`AUTOSAVE_INTERVAL_S`) |
 | Tweak path/placement rules | `src/sim/placement.js` |
 | Tweak guest AI weighting | `src/sim/guests.js` `chooseGuestDestination` |
 | Add a new HUD panel | `src/ui/panels.js` + new section in `index.html` |

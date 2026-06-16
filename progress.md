@@ -27,3 +27,17 @@ Next step progress:
 - Added an Ops mobile tab and exposed operations data in the QA text snapshot.
 - Added Park Data controls for local Save, Load, Clear, and New Park reset.
 - Exposed save/load/reset through QA hooks for repeatable verification.
+
+Session — gameplay depth + ship hardening:
+- Goal: make the build shippable and add features for necessity, retention, and fun.
+- Bug fixes: real weekly operating result (revenue − upkeep + dividend) instead of just the dividend; "1 ride" pluralization.
+- Auto-save & restore: silent autosave slot (18s wall-clock cadence) restored on boot ("Welcome back"), independent of the manual save slot; setting toggle. Park replacements (load/reset) refresh the autosave mirror.
+- Achievements: 14 account-level badges in `data/achievements.js`, evaluated each tick, persisted via `core/progress-store.js` (survive New Park), with a new Awards panel/tab, toast notifications (`ui/toast.js`), and a chime.
+- Day/night + weather: `data/atmosphere.js` + `sim/atmosphere.js`; `getAtmosphereModifiers` bends spawn/mood/appetite, drives a canvas tint + rain pass and a HUD pill; gated by a "Day & weather" setting.
+- Sound: `core/audio.js` synthesizes all SFX (place/remove/dispatch/milestone/achievement) via WebAudio, unlocked on first gesture, toggleable.
+- New settings section "Live World" (Day & weather, Sound, Autosave). Save schema extended (backward compatible, version unchanged).
+
+Verification:
+- `npm run lint:dead` passed (49 files reachable).
+- `npm run qa` passed: QA OK, no page errors, save/load + pause assertions green.
+- Browser-verified desktop + mobile: atmosphere pill, rain rendering, achievement toast/unlock, autosave restore, Awards tab — no console errors.

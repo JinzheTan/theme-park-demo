@@ -3,6 +3,9 @@ import { clamp } from "../util/math.js";
 import { updateEconomy, computeParkMetrics, maybeAwardGrowthMilestones } from "../sim/economy.js";
 import { updateGuests } from "../sim/guests.js";
 import { updateObjects } from "../sim/objects.js";
+import { updateAtmosphere } from "../sim/atmosphere.js";
+import { evaluateAchievements } from "../sim/achievements.js";
+import { autoSaveTick } from "../core/save-game.js";
 import { updateCamera } from "../render/camera.js";
 import { render } from "../render/canvas-world.js";
 import { renderMinimap } from "../render/canvas-minimap.js";
@@ -11,12 +14,15 @@ import { renderPanels } from "../ui/panels.js";
 export function stepFrame(state, canvas, ctx, minimapCanvas, minimapCtx, realDt, simDt) {
   updateCamera(state, canvas, realDt);
   if (simDt > 0) {
+    updateAtmosphere(state, simDt);
     updateEconomy(state, simDt);
     updateGuests(state, simDt);
     updateObjects(state, simDt);
   }
   computeParkMetrics(state);
   maybeAwardGrowthMilestones(state);
+  evaluateAchievements(state);
+  autoSaveTick(state, realDt);
 
   state.uiClock += realDt;
   if (state.uiDirty || state.uiClock >= SIM.UI_REFRESH_INTERVAL_S) {

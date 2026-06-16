@@ -7,6 +7,7 @@ const TABS = [
   { id: "activity", label: "Activity", panelId: "panel-activity" },
   { id: "goals", label: "Goals", panelId: "panel-goals" },
   { id: "rides", label: "Rides", panelId: "panel-rides" },
+  { id: "awards", label: "Awards", panelId: "panel-awards" },
   { id: "notes", label: "Notes", panelId: "panel-notes" },
 ];
 

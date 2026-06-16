@@ -1,5 +1,6 @@
 import { DEFAULT_SETTINGS, normalizeSettings, saveSettings } from "../core/settings.js";
 import { markUiDirty } from "../core/state.js";
+import { setAudioEnabled } from "../core/audio.js";
 import { clearSavedPark, getSaveMeta, loadPark, resetPark, savePark } from "../core/save-game.js";
 import { dom } from "./dom.js";
 import { el, setClass, setText } from "./diff.js";
@@ -21,6 +22,14 @@ const SETTING_SECTIONS = [
     controls: [
       { key: "showBuildPreview", type: "toggle", label: "Build preview" },
       { key: "focusActiveArea", type: "toggle", label: "Park focus" },
+    ],
+  },
+  {
+    label: "Live World",
+    controls: [
+      { key: "dayNightCycle", type: "toggle", label: "Day & weather" },
+      { key: "sound", type: "toggle", label: "Sound effects" },
+      { key: "autoSave", type: "toggle", label: "Autosave" },
     ],
   },
   {
@@ -51,6 +60,7 @@ function applySettingClasses(settings) {
 export function applySettingsToDocument(state) {
   state.settings = normalizeSettings(state.settings);
   applySettingClasses(state.settings);
+  setAudioEnabled(state.settings.sound);
 }
 
 function valueLabel(control, value) {
@@ -181,6 +191,7 @@ function setSetting(key, value) {
 
   stateRef.settings = normalizeSettings({ ...stateRef.settings, [key]: value });
   applySettingClasses(stateRef.settings);
+  if (key === "sound") setAudioEnabled(stateRef.settings.sound);
   saveSettings(stateRef.settings);
   renderSettingsControls(stateRef);
   markUiDirty();
@@ -238,6 +249,7 @@ function handleSettingsClick(event) {
 
   stateRef.settings = { ...DEFAULT_SETTINGS };
   applySettingClasses(stateRef.settings);
+  setAudioEnabled(stateRef.settings.sound);
   saveSettings(stateRef.settings);
   renderSettingsControls(stateRef);
   markUiDirty();
