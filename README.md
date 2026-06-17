@@ -7,11 +7,16 @@ An isometric, browser-based theme-park simulation. Build paths, place rides, wat
 ## Features
 
 - **Live park sim** — guests pathfind from the gate to rides and food, queue, ride, drop litter, and leave; janitors keep it clean; the economy runs on tickets, upkeep, and weekly dividends.
+- **Living guests** — each visitor has a name, party size, and surfaces contextual **thought bubbles** ("This line is too long!", "Best ride here!"). Use the **Inspect** tool to follow one and watch their mood and needs.
 - **Day/night + weather** — a rolling time-of-day and rotating weather (sunny → cloudy → overcast → rain) that nudge attendance, mood, and appetite, with a canvas tint and rain, shown live in the HUD.
 - **Achievements** — 14 account-level badges that persist across parks, with celebratory toasts and chimes.
 - **Growth milestones** — per-park tiers (Budding → Destination) that pay expansion grants.
+- **Trends dashboard** — live sparkline charts of cash, attendance, happiness, and growth over time.
+- **Undo / redo** — every build action is reversible (`Ctrl+Z` / `Ctrl+Y`, or the action-bar buttons); a drag-painted path undoes in one step.
+- **Interactive tutorial** — a first-run coach walks new operators through paths, rides, and guests; replayable from **Settings**.
 - **Autosave & restore** — a silent autosave brings your park back after a refresh; a manual save slot lives alongside it.
-- **Sound** — all SFX are synthesized in-browser (no audio files). Toggleable, like every comfort/view option, in **Settings**.
+- **Dark mode & comfort options** — dark theme, reduced motion, UI scale, and toggles for every overlay, all in **Settings**.
+- **Sound** — all SFX are synthesized in-browser (no audio files). Toggleable in **Settings**.
 
 ## Quick start
 
@@ -33,6 +38,8 @@ Then open <http://localhost:5173>.
 | Pause / 1x / 2x | `Space`, or speed pills |
 | Place / paint path | left-click / left-drag |
 | Remove tile or building | Remove tool, click |
+| Undo / redo | `Ctrl+Z` / `Ctrl+Y` (or `Ctrl+Shift+Z`) |
+| Follow a guest | Inspect tool, click a guest |
 
 ## Architecture (high level)
 

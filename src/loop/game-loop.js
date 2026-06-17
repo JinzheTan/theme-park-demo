@@ -5,6 +5,7 @@ import { updateGuests } from "../sim/guests.js";
 import { updateObjects } from "../sim/objects.js";
 import { updateAtmosphere } from "../sim/atmosphere.js";
 import { evaluateAchievements } from "../sim/achievements.js";
+import { sampleStats } from "../sim/stats.js";
 import { autoSaveTick } from "../core/save-game.js";
 import { updateCamera } from "../render/camera.js";
 import { render } from "../render/canvas-world.js";
@@ -18,6 +19,7 @@ export function stepFrame(state, canvas, ctx, minimapCanvas, minimapCtx, realDt,
     updateEconomy(state, simDt);
     updateGuests(state, simDt);
     updateObjects(state, simDt);
+    sampleStats(state, simDt);
   }
   computeParkMetrics(state);
   maybeAwardGrowthMilestones(state);

@@ -41,3 +41,13 @@ Verification:
 - `npm run lint:dead` passed (49 files reachable).
 - `npm run qa` passed: QA OK, no page errors, save/load + pause assertions green.
 - Browser-verified desktop + mobile: atmosphere pill, rain rendering, achievement toast/unlock, autosave restore, Awards tab — no console errors.
+
+Phase 1 — experience & guest life (D track):
+- Guest identity: names + party size (data/guest-flavor.js); serialized with guests.
+- Thought bubbles: contextual speech bubbles (ride loved, hungry, queue too long, scenery, leaving) rendered on canvas with cooldowns.
+- Inspect tool + guest inspector: click a guest to follow; floating card shows mood/hunger/patience meters, activity, thought; selection ring on canvas.
+- Trends dashboard: sim/stats.js ring-buffer sampler + ui/stats-panel.js sparklines (cash/guests/happiness/growth).
+- Undo/redo: sim/history.js snapshot stack (build-only slice), Ctrl+Z/Y + action-bar buttons; drag-stroke = one undo step.
+- Dark mode: token overrides in styles/components/theme-dark.css, settings toggle.
+- Interactive tutorial: ui/tutorial.js 5-step first-run coach with auto-advancing action steps; localStorage-gated; replayable from Settings.
+- Verified: lint:dead 56 files, npm run qa green, browser checks of every feature (incl. real click-to-inspect) with no console errors.

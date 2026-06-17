@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS = {
   dayNightCycle: true,
   sound: true,
   autoSave: true,
+  darkMode: false,
   reducedMotion: false,
   uiScale: 100,
   startPaused: false,

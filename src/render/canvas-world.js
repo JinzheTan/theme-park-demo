@@ -177,6 +177,48 @@ function queuePosition(object, index) {
   };
 }
 
+function drawThoughtBubble(state, ctx, centerX, bottomY, thought) {
+  const zoom = state.camera.zoom;
+  const fontSize = Math.round(11 * zoom + 4);
+  ctx.save();
+  ctx.font = `${fontSize}px "Trebuchet MS", sans-serif`;
+  const label = `${thought.icon} ${thought.text}`;
+  const textWidth = ctx.measureText(label).width;
+  const padX = 8 * zoom + 4;
+  const padY = 5 * zoom + 3;
+  const w = textWidth + padX * 2;
+  const h = fontSize + padY * 2;
+  const x = centerX - w / 2;
+  const y = bottomY - h;
+  const r = 8 * zoom + 3;
+
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  // Little tail pointing down to the guest.
+  ctx.moveTo(centerX - 5 * zoom, y + h);
+  ctx.lineTo(centerX, y + h + 7 * zoom);
+  ctx.lineTo(centerX + 5 * zoom, y + h);
+  ctx.closePath();
+
+  ctx.fillStyle = "rgba(255, 252, 244, 0.96)";
+  ctx.shadowColor = "rgba(23, 53, 61, 0.28)";
+  ctx.shadowBlur = 10 * zoom;
+  ctx.shadowOffsetY = 3 * zoom;
+  ctx.fill();
+
+  ctx.shadowColor = "transparent";
+  ctx.fillStyle = "#1d3a43";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, centerX, y + h / 2 + 1);
+  ctx.restore();
+}
+
 function drawGuest(state, ctx, guest) {
   if (guest.state === "riding") return;
   let drawX = guest.x;
@@ -194,8 +236,17 @@ function drawGuest(state, ctx, guest) {
   const screen = tileToScreen(state, drawX, drawY);
   const baseY = screen.y + TILE_HEIGHT * 0.62 * state.camera.zoom;
   const size = 10 * state.camera.zoom + 2;
+  const selected = guest.id === state.selectedGuestId;
 
   ctx.save();
+  if (selected) {
+    const pulse = state.settings?.reducedMotion ? 1 : 1 + Math.sin(state.dayClock * 5) * 0.12;
+    ctx.strokeStyle = "rgba(216, 157, 38, 0.95)";
+    ctx.lineWidth = 2.5 * state.camera.zoom;
+    ctx.beginPath();
+    ctx.ellipse(screen.x, baseY + 6, size * 1.4 * pulse, size * 0.7 * pulse, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
   ctx.beginPath();
   ctx.ellipse(screen.x, baseY + 6, size * 0.95, size * 0.42, 0, 0, Math.PI * 2);
@@ -211,6 +262,10 @@ function drawGuest(state, ctx, guest) {
   ctx.fillStyle = guest.color;
   ctx.fillRect(screen.x - size * 0.52, baseY - size * 1.12, size * 1.04, size * 1.02);
   ctx.restore();
+
+  if (guest.thought && state.camera.zoom > 0.55) {
+    drawThoughtBubble(state, ctx, screen.x, baseY - size * 3.1, guest.thought);
+  }
 }
 
 // Full-screen wash that sells time-of-day + weather without touching any of
@@ -287,6 +342,7 @@ export function render(state, ctx, canvas) {
 
   if (
     state.settings?.showBuildPreview !== false &&
+    state.selectedTool !== "inspect" &&
     state.pointer.tile &&
     inBounds(state.pointer.tile.x, state.pointer.tile.y)
   ) {

@@ -11,11 +11,16 @@ import {
   objectNearPath,
   refreshParkGraph,
 } from "./park.js";
+import { captureBuildSnapshot, pushUndoSnapshot } from "./history.js";
 import { addEvent } from "./events.js";
 
 export function canPlaceTool(state, toolId, x, y) {
   const tile = getTile(state, x, y);
   if (!tile) return { ok: false, reason: "Out of bounds" };
+
+  if (toolId === "inspect") {
+    return { ok: true, reason: "Click a guest to follow them" };
+  }
 
   if (toolId === "remove") {
     if (tile.objectId) {
@@ -62,13 +67,25 @@ export function canPlaceTool(state, toolId, x, y) {
 
 export function useToolAt(state, x, y) {
   const toolId = state.selectedTool;
+  if (toolId === "inspect") return false;
   const verdict = canPlaceTool(state, toolId, x, y);
   if (!verdict.ok) return false;
+
+  // Snapshot the pre-change build state once per interaction so a click or a
+  // whole drag-stroke can be undone as a single step.
+  const snapshot = state.strokeUndoPushed ? null : captureBuildSnapshot(state);
+  const commit = () => {
+    if (snapshot && !state.strokeUndoPushed) {
+      pushUndoSnapshot(state, snapshot);
+      state.strokeUndoPushed = true;
+    }
+  };
 
   if (toolId === "path") {
     const placed = markPath(state, x, y);
     if (placed) {
       state.money -= ECONOMY.PATH_COST;
+      commit();
       refreshParkGraph(state);
       markUiDirty();
       return true;
@@ -79,7 +96,9 @@ export function useToolAt(state, x, y) {
   if (toolId === "remove") {
     const tile = getTile(state, x, y);
     if (tile.objectId) {
-      const removed = removeObject(state, state.objects.get(tile.objectId));
+      const target = state.objects.get(tile.objectId);
+      if (target && !target.locked) commit();
+      const removed = removeObject(state, target);
       if (removed) playSfx("remove");
       return removed;
     }
@@ -87,6 +106,7 @@ export function useToolAt(state, x, y) {
       tile.path = false;
       tile.litter = 0;
       state.money += ECONOMY.PATH_REFUND;
+      commit();
       refreshParkGraph(state);
       addEvent(state, "Path updated", "Guests are testing the new circulation layout.");
       markUiDirty();
@@ -99,6 +119,7 @@ export function useToolAt(state, x, y) {
   if (object) {
     const def = OBJECT_DEFS[toolId];
     state.placedByPlayer += 1;
+    commit();
     playSfx("place");
     addEvent(state, "New addition", `${def.label} opened and guests are already reacting.`);
     return true;

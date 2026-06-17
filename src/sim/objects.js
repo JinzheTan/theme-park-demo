@@ -4,6 +4,7 @@ import { getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
 import { playSfx } from "../core/audio.js";
 import { isObjectOperational } from "./park.js";
+import { setThought } from "./guests.js";
 import { addEvent } from "./events.js";
 
 export function cleanAround(state, object) {
@@ -44,8 +45,10 @@ export function finishRideCycle(state, object) {
     if (object.category === "facility") {
       guest.hunger = clamp(guest.hunger - object.stats.hungerRestore, 0, 100);
       guest.happiness = clamp(guest.happiness + GUEST.FACILITY_POST_HAPPY_BOOST, 0, 100);
+      setThought(guest, "ate", object.label, { force: true });
     } else {
       guest.hunger = clamp(guest.hunger + GUEST.POST_RIDE_HUNGER_TICK, 0, 100);
+      setThought(guest, object.stats.excitement >= 18 ? "rideLoved" : "rideOkay", object.label, { force: true });
     }
     state.guestsServed += 1;
   }

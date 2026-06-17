@@ -1,6 +1,7 @@
 export const TOOLS = [
   { id: "path",      group: "Build",     label: "Path",            detail: "Brush winding walkways.",            cost: 6 },
   { id: "remove",    group: "Build",     label: "Remove",          detail: "Refund half of placed items.",        cost: 0 },
+  { id: "inspect",   group: "Build",     label: "Inspect",         detail: "Click a guest to follow them.",       cost: 0 },
   { id: "carousel",  group: "Rides",     label: "Carousel",        detail: "Low queue, family draw.",            cost: 260 },
   { id: "wheel",     group: "Rides",     label: "Wheel",           detail: "Scenic views, steady demand.",       cost: 420 },
   { id: "coaster",   group: "Rides",     label: "Coaster",         detail: "Big thrill, high payoff.",           cost: 700 },

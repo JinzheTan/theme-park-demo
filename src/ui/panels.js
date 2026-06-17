@@ -7,6 +7,10 @@ import { isObjectOperational } from "../sim/park.js";
 import { getAtmosphereModifiers } from "../sim/atmosphere.js";
 import { getGuestActivityItems, getGoalItems, buildInsights, getOperationsItems } from "./insights.js";
 import { renderAchievements } from "./achievements-panel.js";
+import { renderGuestInspector } from "./guest-inspector.js";
+import { renderStats } from "./stats-panel.js";
+import { renderBuildControls } from "./build-controls.js";
+import { renderTutorial } from "./tutorial.js";
 import { flushToasts } from "./toast.js";
 
 let metricsMounted = false;
@@ -318,11 +322,15 @@ export function renderPanels(state) {
   renderActivity(state);
   renderGoals(state);
   renderOperations(state);
+  renderStats(state);
   renderRideStatus(state);
   renderInsights(state);
   renderAchievements(state);
   renderEventLog(state);
   renderFloatingTools(state);
+  renderGuestInspector(state);
+  renderBuildControls(state);
+  renderTutorial(state);
   flushToasts(state);
   state.uiDirty = false;
 }

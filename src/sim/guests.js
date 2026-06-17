@@ -1,13 +1,27 @@
 import { SPAWN_TILE } from "../core/constants.js";
 import { GUEST_COLORS } from "../data/objects.js";
 import { GUEST } from "../data/tuning.js";
-import { clamp, rand, manhattan } from "../util/math.js";
+import { GUEST_FIRST_NAMES, GUEST_LAST_INITIALS, pickThought } from "../data/guest-flavor.js";
+import { clamp, rand, sample, manhattan } from "../util/math.js";
 import { getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
 import { isObjectOperational } from "./park.js";
 import { pathfind, randomWalkableTile } from "./pathfinding.js";
 import { getAtmosphereModifiers } from "./atmosphere.js";
 import { addEvent } from "./events.js";
+
+// Give a guest a short-lived speech bubble. `force` lets high-priority moments
+// (loved a ride, bailed a queue) override an ambient thought; otherwise a small
+// cooldown keeps bubbles from spamming.
+export function setThought(guest, key, label = "", { ttl = 3.4, force = false } = {}) {
+  if (!guest) return;
+  if (!force && (guest.thoughtCooldown > 0 || guest.thoughtTtl > 0)) return;
+  const thought = pickThought(key, label);
+  if (!thought) return;
+  guest.thought = thought;
+  guest.thoughtTtl = ttl;
+  guest.thoughtCooldown = ttl + rand(2.5, 5.5);
+}
 
 export function createGuest(state) {
   const spawnTile = getTile(state, SPAWN_TILE.x, SPAWN_TILE.y);
@@ -30,6 +44,12 @@ export function createGuest(state) {
     lingerClock: rand(...GUEST.INITIAL_LINGER),
     litterClock: rand(...GUEST.INITIAL_LITTER_CLOCK),
     speed: rand(...GUEST.SPEED_RANGE),
+    name: `${sample(GUEST_FIRST_NAMES)} ${sample(GUEST_LAST_INITIALS)}.`,
+    partySize: Math.random() < 0.45 ? 1 : Math.ceil(rand(2, 4)),
+    spend: 0,
+    thought: null,
+    thoughtTtl: 0,
+    thoughtCooldown: rand(1, 4),
   };
 
   state.guests.push(guest);
@@ -69,6 +89,7 @@ export function chooseGuestDestination(state, guest) {
       guest.route = routeHome;
       guest.state = "leaving";
       guest.targetId = null;
+      setThought(guest, guest.happiness >= 55 ? "leavingHappy" : "leavingSad", "", { force: true });
       return;
     }
   }
@@ -120,6 +141,7 @@ export function chooseGuestDestination(state, guest) {
 
   guest.state = "idle";
   guest.route = [];
+  setThought(guest, "bored");
 }
 
 export function joinQueue(state, guest, object) {
@@ -133,6 +155,7 @@ export function joinQueue(state, guest, object) {
     guest.patience = clamp(guest.patience - GUEST.QUEUE_OVERFLOW_PATIENCE_HIT, 0, 100);
     guest.state = "thinking";
     guest.targetId = null;
+    setThought(guest, "queueLong", "", { force: true });
     addEvent(state, "Queue overflow", `${object.label} feels too crowded and guests are peeling away.`);
     return;
   }
@@ -145,6 +168,10 @@ export function joinQueue(state, guest, object) {
 
 export function leavePark(state, guest) {
   state.guests = state.guests.filter((entry) => entry.id !== guest.id);
+  if (state.selectedGuestId === guest.id) {
+    state.selectedGuestId = null;
+    markUiDirty();
+  }
 }
 
 export function updateGuests(state, deltaTime) {
@@ -169,6 +196,20 @@ export function updateGuests(state, deltaTime) {
         markUiDirty();
       }
       guest.litterClock = rand(...GUEST.LITTER_INTERVAL_S);
+    }
+
+    // Speech-bubble lifecycle + ambient thoughts.
+    if (guest.thoughtTtl > 0) {
+      guest.thoughtTtl -= deltaTime;
+      if (guest.thoughtTtl <= 0) guest.thought = null;
+    }
+    if (guest.thoughtCooldown > 0) guest.thoughtCooldown -= deltaTime;
+    if (guest.thoughtCooldown <= 0 && !guest.thought) {
+      if (guest.hunger > 64 && Math.random() < deltaTime * 0.25) {
+        setThought(guest, "hungry");
+      } else if (state.cleanliness < 62 && Math.random() < deltaTime * 0.18) {
+        setThought(guest, "dirty");
+      }
     }
 
     if (guest.state === "thinking" || guest.state === "idle") {
@@ -218,6 +259,7 @@ export function updateGuests(state, deltaTime) {
         const sceneryBoost = scenicValueAt(state, Math.round(guest.x), Math.round(guest.y));
         if (sceneryBoost > 0) {
           guest.happiness = clamp(guest.happiness + sceneryBoost * 0.008, 0, 100);
+          if (sceneryBoost > 3 && Math.random() < 0.05) setThought(guest, "scenery");
         }
       } else {
         guest.x += (stepX / distance) * move;
@@ -239,6 +281,7 @@ export function updateGuests(state, deltaTime) {
         guest.waitingAt = null;
         guest.state = "thinking";
         guest.happiness = clamp(guest.happiness - GUEST.QUEUE_CHURN_HAPPY_HIT, 0, 100);
+        setThought(guest, "queueLong", "", { force: true });
         addEvent(state, "Guest churn", "A guest bailed from a long wait and went looking elsewhere.");
       }
       continue;

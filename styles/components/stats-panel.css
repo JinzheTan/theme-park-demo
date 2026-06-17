@@ -1,0 +1,34 @@
+/* Trends dashboard — one sparkline card per tracked metric. */
+
+.stats-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.stat-trend {
+  padding: 9px 11px;
+}
+
+.stat-trend strong {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+  color: var(--ink-strong);
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.stat-trend__value {
+  flex: 0 0 auto;
+  color: var(--gold-ink);
+  font-size: 0.92rem;
+  font-weight: 850;
+}
+
+.stat-trend__chart {
+  display: block;
+  width: 100%;
+  height: 46px;
+}

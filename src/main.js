@@ -14,6 +14,9 @@ import { bindSpeedControls } from "./ui/speed-controls.js";
 import { initControlsPopover } from "./ui/controls-popover.js";
 import { initMobileTabs } from "./ui/mobile-tabs.js";
 import { bindSettingsPanel, applySettingsToDocument } from "./ui/settings-panel.js";
+import { bindGuestInspector } from "./ui/guest-inspector.js";
+import { bindBuildControls } from "./ui/build-controls.js";
+import { maybeStartTutorial } from "./ui/tutorial.js";
 import { bindKeyboard } from "./input/keyboard.js";
 import { bindPointer } from "./input/pointer.js";
 import { bindWheel } from "./input/wheel.js";
@@ -41,6 +44,8 @@ async function bootstrap() {
   bindSpeedControls(state);
   applySettingsToDocument(state);
   bindSettingsPanel(state);
+  bindGuestInspector(state);
+  bindBuildControls(state);
   initControlsPopover();
   initMobileTabs();
 
@@ -78,6 +83,9 @@ async function bootstrap() {
     addEvent(state, "Park open", "Wonderloop Park is ready for new paths, rides, and scenic upgrades.");
     addEvent(state, "Starter layout", "The opening plaza includes a carousel, food, and care coverage.");
   }
+
+  // First-run coach: only for a genuinely fresh park, never on a restored one.
+  maybeStartTutorial(state, { restored: restoredFromAutoSave });
 
   const advanceTime = startGameLoop(state, dom.canvas, ctx2d, dom.minimapCanvas, minimapCtx2d);
   installQaHooks(state, dom.canvas, advanceTime);

@@ -6,6 +6,7 @@ import { dom } from "./dom.js";
 import { el, setClass, setText } from "./diff.js";
 import { setSimulationSpeed } from "./speed-controls.js";
 import { setSelectedTool } from "./tools-panel.js";
+import { startTutorial } from "./tutorial.js";
 
 const SETTING_SECTIONS = [
   {
@@ -35,6 +36,7 @@ const SETTING_SECTIONS = [
   {
     label: "Comfort",
     controls: [
+      { key: "darkMode", type: "toggle", label: "Dark mode" },
       { key: "reducedMotion", type: "toggle", label: "Reduced motion" },
       { key: "startPaused", type: "toggle", label: "Start paused" },
       { key: "uiScale", type: "range", label: "UI scale", min: 90, max: 110, step: 5 },
@@ -55,6 +57,7 @@ function applySettingClasses(settings) {
   document.body.classList.toggle("settings-hide-floating", !settings.showFloatingHud);
   document.body.classList.toggle("settings-hide-hover", !settings.showHoverCard);
   document.body.classList.toggle("settings-reduced-motion", settings.reducedMotion);
+  document.body.classList.toggle("theme-dark", settings.darkMode);
 }
 
 export function applySettingsToDocument(state) {
@@ -173,10 +176,15 @@ function mountSettingsPanel(state) {
   host.appendChild(dataSection);
 
   const footer = el("div", "settings-footer");
+  const replay = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
+  replay.type = "button";
+  replay.dataset.replayTutorial = "true";
+  setText(replay, "Replay Tutorial");
   const reset = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
   reset.type = "button";
   reset.dataset.settingsReset = "true";
   setText(reset, "Reset Settings");
+  footer.appendChild(replay);
   footer.appendChild(reset);
   host.appendChild(footer);
 
@@ -241,6 +249,12 @@ function handleSettingsClick(event) {
     setSelectedTool("path");
     setSimulationSpeed(stateRef.timeScale);
     renderSaveControls();
+    return;
+  }
+
+  const replayTarget = event.target.closest("[data-replay-tutorial]");
+  if (replayTarget) {
+    startTutorial(stateRef);
     return;
   }
 

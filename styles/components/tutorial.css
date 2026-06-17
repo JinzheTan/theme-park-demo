@@ -1,0 +1,70 @@
+/* First-run coach card, centered along the bottom of the viewport. */
+
+.tutorial-card {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: var(--z-modal);
+  width: min(440px, calc(100% - 32px));
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+}
+
+.tutorial-card.visible {
+  display: flex;
+}
+
+.tutorial-card__step {
+  margin: 0;
+}
+
+.tutorial-card__title {
+  margin: 0;
+  color: var(--ink-strong);
+  font-family: ui-serif, "New York", Georgia, serif;
+  font-size: 1.18rem;
+  font-weight: 740;
+  line-height: 1.15;
+}
+
+.tutorial-card__body {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.86rem;
+  font-weight: 580;
+  line-height: 1.4;
+}
+
+.tutorial-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.tutorial-card__skip {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 720;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.tutorial-card__skip:hover {
+  color: var(--ink);
+}
+
+.tutorial-card__actions .pill--action {
+  min-width: 128px;
+}
+
+.tutorial-card__actions .pill--action:disabled {
+  cursor: default;
+  opacity: 0.7;
+}

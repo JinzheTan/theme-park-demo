@@ -39,6 +39,10 @@
               <button class="pill pill--toggle active glass--active" data-speed="1">1x</button>
               <button class="pill pill--toggle" data-speed="2">2x</button>
             </div>
+            <div class="pill-group build-controls" id="buildControls" aria-label="Undo and redo">
+              <button class="pill pill--toggle" id="undoButton" type="button" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+              <button class="pill pill--toggle" id="redoButton" type="button" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+            </div>
           </div>
 
           <div class="controls-launcher">
@@ -70,6 +74,8 @@
 
           <div class="floating-tools" id="floatingTools"></div>
           <div class="hover-card glass glass--depth-1" id="hoverCard"></div>
+          <div class="guest-inspector glass glass--depth-2" id="guestInspector"></div>
+          <div class="tutorial-card glass glass--depth-3" id="tutorialCard" role="dialog" aria-label="Tutorial"></div>
           <div class="toast-stack" id="toastStack" aria-live="polite"></div>
         </section>
 
@@ -113,6 +119,14 @@
               <h2>Park Ops</h2>
             </div>
             <div class="operations-panel" id="operationsPanel"></div>
+          </section>
+
+          <section class="panel glass glass--depth-2" data-tab-panel="ops">
+            <div class="panel-heading">
+              <p class="eyebrow">Performance</p>
+              <h2>Trends</h2>
+            </div>
+            <div class="stats-panel" id="statsPanel"></div>
           </section>
 
           <section class="panel glass glass--depth-2" data-tab-panel="activity">

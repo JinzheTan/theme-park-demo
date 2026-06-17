@@ -31,6 +31,8 @@ export function createState() {
     weatherTimer: 30,
     placedByPlayer: 0,
     peakGuests: 0,
+    statsHistory: [],
+    statsClock: 0,
     autoSaveClock: 0,
     unlockedAchievements: loadUnlockedAchievements(),
     pendingToasts: [],
@@ -61,6 +63,10 @@ export function createState() {
     feed: [],
     claimedMilestones: new Set(),
     focusedTile: { x: GATE_POSITION.x, y: GATE_POSITION.y },
+    selectedGuestId: null,
+    undoStack: [],
+    redoStack: [],
+    strokeUndoPushed: false,
   };
 }
 
