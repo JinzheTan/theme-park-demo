@@ -7,7 +7,11 @@ An isometric, browser-based theme-park simulation. Build paths, place rides, wat
 ## Features
 
 - **Live park sim** — guests pathfind from the gate to rides and food, queue, ride, drop litter, and leave; janitors keep it clean; the economy runs on tickets, upkeep, and weekly dividends.
-- **Living guests** — each visitor has a name, party size, and surfaces contextual **thought bubbles** ("This line is too long!", "Best ride here!"). Use the **Inspect** tool to follow one and watch their mood and needs.
+- **Living guests** — each visitor has a name, party size, and four needs (hunger, thirst, relief, energy), and surfaces contextual **thought bubbles** ("This line is too long!", "Ahh, refreshing!"). Use the **Inspect** tool to follow one and watch their mood and needs.
+- **Amenities & comfort** — Drink Kiosks, Restrooms, Park Benches, and Trash Bins keep guests watered, relieved, rested, and the paths tidy.
+- **Staff** — hire Janitors, Mechanics, Entertainers, and Security who roam the park doing their jobs, for an up-front fee plus per-cycle wages.
+- **Ride upkeep** — rides wear and can break down; Mechanics repair them fast (with an external-crew fallback so you're never stuck).
+- **Finance** — set a ticket-pricing strategy and park entry fee with real demand trade-offs, take loans with weekly interest, and a cushioned bailout that keeps a broke park alive instead of ending the game.
 - **Day/night + weather** — a rolling time-of-day and rotating weather (sunny → cloudy → overcast → rain) that nudge attendance, mood, and appetite, with a canvas tint and rain, shown live in the HUD.
 - **Achievements** — 14 account-level badges that persist across parks, with celebratory toasts and chimes.
 - **Growth milestones** — per-park tiers (Budding → Destination) that pay expansion grants.

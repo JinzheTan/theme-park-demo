@@ -135,12 +135,26 @@ export function buildInsights(state) {
   );
   const insights = [];
 
-  if (state.money < 250) {
+  if (state.money < 0) {
+    insights.push({
+      key: "in-the-red",
+      tone: "warn",
+      title: "Cash is in the red",
+      detail: "Raise ticket prices, take a loan, or trim staff before an emergency bailout kicks in.",
+    });
+  } else if (state.money < 250) {
     insights.push({
       key: "low-cash",
       tone: "warn",
       title: "Cash is running thin",
       detail: "Slow expansion for a moment or add another revenue attraction before upkeep bites.",
+    });
+  } else if ((state.debt ?? 0) > 0) {
+    insights.push({
+      key: "debt",
+      tone: "warn",
+      title: `Carrying $${Math.round(state.debt)} of debt`,
+      detail: "Interest compounds weekly — repay from the Finance tab once cash is comfortable.",
     });
   }
 

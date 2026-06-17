@@ -6,6 +6,7 @@ import { playSfx } from "../core/audio.js";
 import { isObjectOperational } from "./park.js";
 import { setThought } from "./guests.js";
 import { wearRide } from "./breakdown.js";
+import { effectiveTicket } from "./finance.js";
 import { addEvent } from "./events.js";
 
 export function cleanAround(state, object) {
@@ -133,7 +134,7 @@ export function updateObjects(state, deltaTime) {
       object.riders = boarded;
       object.cycleRemaining = object.stats.cycle;
 
-      const revenue = boarded.length * (object.stats.ticket ?? 0);
+      const revenue = boarded.length * effectiveTicket(state, object);
       state.money += revenue;
       state.totalRevenue += revenue;
       playSfx("dispatch");

@@ -8,6 +8,7 @@ import { markUiDirty } from "../core/state.js";
 import { isObjectOperational } from "./park.js";
 import { pathfind, randomWalkableTile } from "./pathfinding.js";
 import { getAtmosphereModifiers } from "./atmosphere.js";
+import { pricePenalty } from "./finance.js";
 import { addEvent } from "./events.js";
 
 // Give a guest a short-lived speech bubble. `force` lets high-priority moments
@@ -139,7 +140,8 @@ export function chooseGuestDestination(state, guest) {
           object.stats.excitement +
           rand(-3, 6) -
           object.queue.length * 2.2 -
-          manhattan(object.entry, guest) * 0.5,
+          manhattan(object.entry, guest) * 0.5 -
+          pricePenalty(state, object),
       }))
       .sort((a, b) => b.score - a.score)[0]?.object;
   }

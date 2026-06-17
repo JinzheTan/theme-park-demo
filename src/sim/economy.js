@@ -7,6 +7,7 @@ import { isObjectOperational } from "./park.js";
 import { createGuest } from "./guests.js";
 import { addEvent } from "./events.js";
 import { getAtmosphereModifiers } from "./atmosphere.js";
+import { accrueWeeklyInterest, updateFinanceSafety } from "./finance.js";
 
 export function updateEconomy(state, deltaTime) {
   state.dayClock += deltaTime;
@@ -25,6 +26,7 @@ export function updateEconomy(state, deltaTime) {
     state.weekUpkeepMark = state.totalUpkeep;
     state.money += weeklyBonus;
     state.weeklyProfit = Math.round(weekRevenue - weekUpkeep + weeklyBonus);
+    accrueWeeklyInterest(state);
     state.day += 1;
     addEvent(
       state,
@@ -52,6 +54,14 @@ export function updateEconomy(state, deltaTime) {
 
   if (state.guestSpawnTimer <= 0 && state.guests.length < cap) {
     createGuest(state);
+    // A park entry fee is collected per arrival, but a steep gate price also
+    // turns some would-be visitors away (longer spawn gap).
+    const fee = state.entryFee ?? 0;
+    if (fee > 0) {
+      state.money += fee;
+      state.totalRevenue += fee;
+    }
+    const feeDamp = Math.max(0.45, 1 - fee / 60);
     const baseDelay = clamp(
       SIM.SPAWN_BASE_DELAY -
         rideCount * 0.32 -
@@ -61,16 +71,18 @@ export function updateEconomy(state, deltaTime) {
       SIM.SPAWN_TIMER_RANGE[1],
     );
     // Busier phases / fair weather shorten the gap between arrivals; quiet
-    // nights and rain stretch it out.
+    // nights, rain, and high gate prices stretch it out.
     state.guestSpawnTimer = clamp(
-      baseDelay / Math.max(0.4, atmosphere.spawn),
+      baseDelay / Math.max(0.4, atmosphere.spawn * feeDamp),
       SIM.SPAWN_TIMER_RANGE[0] * 0.7,
-      SIM.SPAWN_TIMER_RANGE[1] * 1.6,
+      SIM.SPAWN_TIMER_RANGE[1] * 1.8,
     );
     markUiDirty();
   }
 
   if (state.guests.length > state.peakGuests) state.peakGuests = state.guests.length;
+
+  updateFinanceSafety(state, deltaTime);
 }
 
 export function computeParkMetrics(state) {

@@ -5,6 +5,16 @@ export const ECONOMY = {
   REMOVE_REFUND_RATIO: 0.55,
   UPKEEP_INTERVAL_S: 10,
   WEEK_LENGTH_S: 28,
+  // Finance: pricing, entry fee, loans, and the cushioned bankruptcy backstop.
+  PRICE_MULT_RANGE: [0.6, 1.6],
+  ENTRY_FEE_RANGE: [0, 30],
+  LOAN_OPTIONS: [500, 1500, 4000],
+  LOAN_INTEREST_WEEKLY: 0.06,
+  BANKRUPTCY_FLOOR: -1500,
+  BANKRUPTCY_GRACE_S: 32,
+  BAILOUT_CASH: 600,
+  BAILOUT_DEBT: 1200,
+  BAILOUT_GROWTH_PENALTY: 40,
 };
 
 export const GUEST = {

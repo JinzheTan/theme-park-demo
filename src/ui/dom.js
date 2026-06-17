@@ -11,6 +11,7 @@ export const dom = {
   operationsPanel: document.getElementById("operationsPanel"),
   statsPanel: document.getElementById("statsPanel"),
   staffPanel: document.getElementById("staffPanel"),
+  financePanel: document.getElementById("financePanel"),
   achievementsList: document.getElementById("achievementsList"),
   achievementsCount: document.getElementById("achievementsCount"),
   toastStack: document.getElementById("toastStack"),

@@ -10,6 +10,7 @@ import { renderAchievements } from "./achievements-panel.js";
 import { renderGuestInspector } from "./guest-inspector.js";
 import { renderStats } from "./stats-panel.js";
 import { renderStaff } from "./staff-panel.js";
+import { renderFinance } from "./finance-panel.js";
 import { renderBuildControls } from "./build-controls.js";
 import { renderTutorial } from "./tutorial.js";
 import { flushToasts } from "./toast.js";
@@ -328,6 +329,7 @@ export function renderPanels(state) {
   renderOperations(state);
   renderStats(state);
   renderStaff(state);
+  renderFinance(state);
   renderRideStatus(state);
   renderInsights(state);
   renderAchievements(state);
