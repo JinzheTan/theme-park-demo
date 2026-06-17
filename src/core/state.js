@@ -9,6 +9,7 @@ export function createState() {
     tiles: [],
     objects: new Map(),
     guests: [],
+    staff: [],
     selectedTool: "path",
     money: ECONOMY.STARTING_MONEY,
     guestsServed: 0,
@@ -47,6 +48,7 @@ export function createState() {
     assets: {},
     nextObjectId: 1,
     nextGuestId: 1,
+    nextStaffId: 1,
     nextEventId: 1,
     pointer: {
       x: 0,

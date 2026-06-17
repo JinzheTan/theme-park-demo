@@ -30,6 +30,29 @@ export const THOUGHTS = {
     { icon: "🍟", text: "I'm getting hungry..." },
     { icon: "😟", text: "Where's the food?" },
   ],
+  thirsty: [
+    { icon: "🥤", text: "So thirsty..." },
+    { icon: "😓", text: "I need a drink." },
+  ],
+  drank: [
+    { icon: "😎", text: "Ahh, refreshing!" },
+    { icon: "🥤", text: "Much better." },
+  ],
+  relief: [
+    { icon: "🚻", text: "I need a restroom!" },
+    { icon: "😬", text: "Where's the restroom?" },
+  ],
+  relieved: [
+    { icon: "😌", text: "Phew, much better." },
+  ],
+  tired: [
+    { icon: "🥱", text: "My feet are aching." },
+    { icon: "😮‍💨", text: "I need to sit down." },
+  ],
+  rested: [
+    { icon: "😊", text: "That bench was nice." },
+    { icon: "💺", text: "Feeling recharged." },
+  ],
   queueLong: [
     { icon: "😤", text: "This line is too long!" },
     { icon: "⏳", text: "Still waiting..." },

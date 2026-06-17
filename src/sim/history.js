@@ -25,6 +25,10 @@ export function captureBuildSnapshot(state) {
       y: object.y,
       locked: object.locked,
       removable: object.removable,
+      condition: object.condition,
+      broken: object.broken,
+      downtime: object.downtime,
+      ticketPrice: object.ticketPrice,
     })),
   };
 }
@@ -49,6 +53,10 @@ function rebuildObject(data) {
     removable: Boolean(data.removable),
     stats: { ...def },
     sparkle: rand(0, Math.PI * 2),
+    condition: data.condition == null ? (def.category === "ride" ? 100 : null) : data.condition,
+    broken: Boolean(data.broken),
+    downtime: Number(data.downtime) || 0,
+    ticketPrice: data.ticketPrice ?? null,
   };
 }
 

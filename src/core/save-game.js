@@ -33,6 +33,7 @@ const STATE_KEYS = [
   "peakGuests",
   "nextObjectId",
   "nextGuestId",
+  "nextStaffId",
   "nextEventId",
   "camera",
   "cameraTouched",
@@ -73,6 +74,10 @@ function cloneObject(object) {
     locked: object.locked,
     removable: object.removable,
     sparkle: object.sparkle,
+    condition: object.condition,
+    broken: object.broken,
+    downtime: object.downtime,
+    ticketPrice: object.ticketPrice,
   };
 }
 
@@ -96,6 +101,10 @@ function restoreObject(data) {
     removable: Boolean(data.removable),
     stats: { ...def },
     sparkle: Number(data.sparkle) || 0,
+    condition: data.condition == null ? (def.category === "ride" ? 100 : null) : Number(data.condition),
+    broken: Boolean(data.broken),
+    downtime: Number(data.downtime) || 0,
+    ticketPrice: data.ticketPrice == null ? null : Number(data.ticketPrice),
   };
 }
 
@@ -127,6 +136,7 @@ function applyPlainState(state, plain) {
     if (object) state.objects.set(object.id, object);
   }
   state.guests = Array.isArray(plain.guests) ? plain.guests.map((guest) => ({ ...guest })) : [];
+  state.staff = Array.isArray(plain.staff) ? plain.staff.map((worker) => ({ ...worker, route: [] })) : [];
   state.feed = Array.isArray(plain.feed) ? plain.feed.map((entry) => ({ ...entry })) : [];
   state.claimedMilestones = new Set(plain.claimedMilestones ?? []);
   refreshParkGraph(state);
@@ -157,6 +167,7 @@ export function serializePark(state) {
     tiles: state.tiles.map((row) => row.map(cloneTile)),
     objects: [...state.objects.values()].map(cloneObject),
     guests: state.guests.map((guest) => ({ ...guest })),
+    staff: state.staff.map((worker) => ({ ...worker, route: [] })),
     feed: state.feed.map((entry) => ({ ...entry })),
     claimedMilestones: [...state.claimedMilestones],
   };

@@ -1,0 +1,14 @@
+<svg width="130" height="150" viewBox="0 0 130 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="65" cy="132" rx="40" ry="12" fill="#132B31" fill-opacity=".24"/>
+  <!-- can body -->
+  <path d="M38 56h54l-6 74H44l-6-74Z" fill="#36BCA9"/>
+  <path d="M65 56h27l-6 74H65V56Z" fill="#2E9E8E" fill-opacity=".55"/>
+  <!-- vertical highlight -->
+  <rect x="52" y="62" width="6" height="62" rx="3" fill="#FFF6DE" fill-opacity=".35"/>
+  <!-- lid -->
+  <rect x="32" y="44" width="66" height="16" rx="8" fill="#2E9E8E"/>
+  <rect x="32" y="42" width="66" height="10" rx="5" fill="#43C9B6"/>
+  <rect x="58" y="32" width="14" height="12" rx="4" fill="#2E9E8E"/>
+  <!-- recycle mark -->
+  <path d="M59 86l6-10 6 10h-4v8h-4v-8h-4Z" fill="#FFF6DE" fill-opacity=".8"/>
+</svg>

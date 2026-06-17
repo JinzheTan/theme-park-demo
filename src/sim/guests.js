@@ -39,6 +39,9 @@ export function createGuest(state) {
     queueOffset: 0,
     happiness: clamp(rand(...GUEST.INITIAL_HAPPINESS), 0, 100),
     hunger: rand(...GUEST.INITIAL_HUNGER),
+    thirst: rand(...GUEST.INITIAL_THIRST),
+    relief: rand(...GUEST.INITIAL_RELIEF),
+    energy: rand(...GUEST.INITIAL_ENERGY),
     patience: rand(...GUEST.INITIAL_PATIENCE),
     activities: 0,
     lingerClock: rand(...GUEST.INITIAL_LINGER),
@@ -54,6 +57,15 @@ export function createGuest(state) {
 
   state.guests.push(guest);
   state.totalGuestCount += 1;
+}
+
+export function binNear(state, x, y) {
+  for (const object of state.objects.values()) {
+    if (object.type !== "bin") continue;
+    const radius = object.stats.binRadius ?? 2;
+    if (Math.abs(object.x - x) <= radius && Math.abs(object.y - y) <= radius) return true;
+  }
+  return false;
 }
 
 export function scenicValueAt(state, x, y) {
@@ -76,7 +88,7 @@ export function chooseGuestDestination(state, guest) {
   );
 
   const rides = accessibleObjects.filter((object) => object.category === "ride");
-  const food = accessibleObjects.filter((object) => object.category === "facility");
+  const facilities = accessibleObjects.filter((object) => object.category === "facility");
   const atmosphere = getAtmosphereModifiers(state);
   const foodPriorityThreshold = GUEST.HUNGER_TO_PRIORITIZE_FOOD - atmosphere.foodPull;
 
@@ -96,11 +108,25 @@ export function chooseGuestDestination(state, guest) {
 
   let target = null;
 
-  if (guest.hunger > foodPriorityThreshold && food.length) {
-    target = food
+  // Needs come first: find the most pressing unmet need that an accessible
+  // facility can actually serve, then head to the best one of that kind.
+  const needs = [
+    { serves: "relief", urgency: guest.relief ?? 0, threshold: GUEST.RELIEF_TO_PRIORITIZE },
+    { serves: "thirst", urgency: guest.thirst ?? 0, threshold: GUEST.THIRST_TO_PRIORITIZE },
+    { serves: "hunger", urgency: guest.hunger, threshold: foodPriorityThreshold },
+    { serves: "energy", urgency: 100 - (guest.energy ?? 100), threshold: 100 - GUEST.ENERGY_LOW_PRIORITIZE },
+  ];
+  const pressing = needs
+    .filter((need) => need.urgency >= need.threshold && facilities.some((f) => f.stats.serves === need.serves))
+    .sort((a, b) => (b.urgency - b.threshold) - (a.urgency - a.threshold))[0];
+
+  if (pressing) {
+    const pull = pressing.serves === "hunger" ? atmosphere.foodPull : 0;
+    target = facilities
+      .filter((object) => object.stats.serves === pressing.serves)
       .map((object) => ({
         object,
-        score: 30 + atmosphere.foodPull - object.queue.length * 4 - manhattan(object.entry, guest),
+        score: 30 + pull - object.queue.length * 4 - manhattan(object.entry, guest),
       }))
       .sort((a, b) => b.score - a.score)[0]?.object;
   }
@@ -178,11 +204,23 @@ export function updateGuests(state, deltaTime) {
   const atmosphere = getAtmosphereModifiers(state);
   for (const guest of [...state.guests]) {
     guest.hunger = clamp(guest.hunger + deltaTime * GUEST.HUNGER_RATE, 0, 100);
+    guest.thirst = clamp((guest.thirst ?? 0) + deltaTime * GUEST.THIRST_RATE, 0, 100);
+    guest.relief = clamp((guest.relief ?? 0) + deltaTime * GUEST.RELIEF_RATE, 0, 100);
+    guest.energy = clamp((guest.energy ?? 100) - deltaTime * GUEST.ENERGY_RATE, 0, 100);
     guest.patience = clamp(guest.patience - deltaTime * GUEST.PATIENCE_DECAY, 0, 100);
     guest.litterClock -= deltaTime;
+
+    // Each unmet need chips away at happiness; multiple unmet needs stack so a
+    // neglected guest sours quickly. With everything satisfied, only the gentle
+    // baseline decay applies.
+    const discomfort =
+      (guest.hunger > 72 ? GUEST.HAPPY_DECAY_HUNGRY : 0) +
+      (guest.thirst > GUEST.THIRST_DISCOMFORT ? GUEST.HAPPY_DECAY_THIRSTY : 0) +
+      (guest.relief > GUEST.RELIEF_DISCOMFORT ? GUEST.HAPPY_DECAY_RELIEF : 0) +
+      (guest.energy < GUEST.ENERGY_DISCOMFORT ? GUEST.HAPPY_DECAY_TIRED : 0);
     guest.happiness = clamp(
       guest.happiness
-        - deltaTime * (guest.hunger > 72 ? GUEST.HAPPY_DECAY_HUNGRY : GUEST.HAPPY_DECAY_BASE)
+        - deltaTime * (discomfort || GUEST.HAPPY_DECAY_BASE)
         - deltaTime * (100 - state.cleanliness) * 0.01
         + deltaTime * atmosphere.happyDrift,
       0,
@@ -191,7 +229,9 @@ export function updateGuests(state, deltaTime) {
 
     if (guest.litterClock <= 0) {
       const tile = getTile(state, Math.round(guest.x), Math.round(guest.y));
-      if (tile?.path && Math.random() < GUEST.LITTER_BASE_CHANCE + (100 - state.cleanliness) / 320) {
+      let chance = GUEST.LITTER_BASE_CHANCE + (100 - state.cleanliness) / 320;
+      if (binNear(state, Math.round(guest.x), Math.round(guest.y))) chance *= 0.3;
+      if (tile?.path && Math.random() < chance) {
         tile.litter = clamp(tile.litter + 1, 0, 4);
         markUiDirty();
       }
@@ -205,9 +245,15 @@ export function updateGuests(state, deltaTime) {
     }
     if (guest.thoughtCooldown > 0) guest.thoughtCooldown -= deltaTime;
     if (guest.thoughtCooldown <= 0 && !guest.thought) {
-      if (guest.hunger > 64 && Math.random() < deltaTime * 0.25) {
+      if (guest.thirst > 66 && Math.random() < deltaTime * 0.25) {
+        setThought(guest, "thirsty");
+      } else if (guest.hunger > 64 && Math.random() < deltaTime * 0.22) {
         setThought(guest, "hungry");
-      } else if (state.cleanliness < 62 && Math.random() < deltaTime * 0.18) {
+      } else if (guest.relief > 76 && Math.random() < deltaTime * 0.22) {
+        setThought(guest, "relief");
+      } else if (guest.energy < 26 && Math.random() < deltaTime * 0.2) {
+        setThought(guest, "tired");
+      } else if (state.cleanliness < 62 && Math.random() < deltaTime * 0.16) {
         setThought(guest, "dirty");
       }
     }

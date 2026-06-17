@@ -10,6 +10,7 @@ export const dom = {
   settingsPanel: document.getElementById("settingsPanel"),
   operationsPanel: document.getElementById("operationsPanel"),
   statsPanel: document.getElementById("statsPanel"),
+  staffPanel: document.getElementById("staffPanel"),
   achievementsList: document.getElementById("achievementsList"),
   achievementsCount: document.getElementById("achievementsCount"),
   toastStack: document.getElementById("toastStack"),

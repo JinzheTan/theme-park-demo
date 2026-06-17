@@ -51,3 +51,11 @@ Phase 1 — experience & guest life (D track):
 - Dark mode: token overrides in styles/components/theme-dark.css, settings toggle.
 - Interactive tutorial: ui/tutorial.js 5-step first-run coach with auto-advancing action steps; localStorage-gated; replayable from Settings.
 - Verified: lint:dead 56 files, npm run qa green, browser checks of every feature (incl. real click-to-inspect) with no console errors.
+
+Phase 2 — management depth (A track), in progress:
+- Guest needs v2: thirst, relief (bladder), energy added alongside hunger; stacking happiness penalties; needs-priority destination choice; need-satisfaction thoughts.
+- New facilities: Drink Kiosk (thirst), Restroom (relief), Park Bench (energy), Trash Bin (cuts nearby litter). Authored 4 palette-matched SVG sprites loaded via the existing Image loader. New "Comfort" tool group. Seeded a few into the starter park. Need-based insights guide what to build. New "Creature Comforts" achievement.
+- Staff system (src/data/staff.js + src/sim/staff.js): hire/dismiss Janitor/Mechanic/Entertainer/Security with up-front fee + per-cycle wages; staff walk the paths; janitor cleans litter, entertainer/security apply nearby auras, mechanic services/repairs rides. Staff panel + mobile tab + canvas rendering; staff persisted in saves.
+- Breakdowns & repair (src/sim/breakdown.js): rides wear with use, break down and stop, mechanics repair fast, external crew auto-recovers after a downtime window so no soft-lock. Ride condition shown in Ride Status + "⚠ Closed" canvas label; breakdown toast.
+- Remaining: pricing + loans/bankruptcy (task 17).
+- Verified: lint:dead 60 files, npm run qa green (rides 5), browser checks: hiring all 4 staff, janitor cleaning, forced breakdown → mechanic repair, needs loop, no console errors.

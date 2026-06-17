@@ -34,6 +34,13 @@ export const ACHIEVEMENTS = [
     test: (c) => c.guestsInside >= 50,
   },
   {
+    id: "comforts",
+    icon: "🧺",
+    label: "Creature Comforts",
+    detail: "Run a food stall, drink kiosk, and restroom at once.",
+    test: (c) => c.hasType("food") && c.hasType("drink") && c.hasType("restroom"),
+  },
+  {
     id: "served-250",
     icon: "🎟️",
     label: "Showtime",

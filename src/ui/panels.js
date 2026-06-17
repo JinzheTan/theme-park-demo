@@ -9,6 +9,7 @@ import { getGuestActivityItems, getGoalItems, buildInsights, getOperationsItems 
 import { renderAchievements } from "./achievements-panel.js";
 import { renderGuestInspector } from "./guest-inspector.js";
 import { renderStats } from "./stats-panel.js";
+import { renderStaff } from "./staff-panel.js";
 import { renderBuildControls } from "./build-controls.js";
 import { renderTutorial } from "./tutorial.js";
 import { flushToasts } from "./toast.js";
@@ -143,6 +144,9 @@ function rideStatusItems(state) {
         } else if (!operational) {
           line = "Disconnected from gate";
           warn = true;
+        } else if (object.broken) {
+          line = "Broken — needs a mechanic";
+          warn = true;
         } else if (object.riders.length) {
           line = `Running ${object.riders.length} guests / ${object.stats.capacity}`;
         } else {
@@ -156,7 +160,7 @@ function rideStatusItems(state) {
       }
       const secondary =
         object.category === "ride"
-          ? `Excitement ${object.stats.excitement}`
+          ? `Excitement ${object.stats.excitement} · ${Math.round(object.condition ?? 100)}% condition`
           : object.category === "scenery"
             ? `Scenery ${object.stats.scenery}`
             : "Keeps the park moving";
@@ -323,6 +327,7 @@ export function renderPanels(state) {
   renderGoals(state);
   renderOperations(state);
   renderStats(state);
+  renderStaff(state);
   renderRideStatus(state);
   renderInsights(state);
   renderAchievements(state);

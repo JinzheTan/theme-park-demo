@@ -57,8 +57,10 @@ function mount() {
   const thought = el("span", "guest-inspector__thought");
 
   const happy = meter("Happiness");
+  const energy = meter("Energy");
   const hunger = meter("Hunger");
-  const patience = meter("Patience");
+  const thirst = meter("Thirst");
+  const relief = meter("Relief");
 
   const footer = el("span", "guest-inspector__footer");
 
@@ -67,8 +69,10 @@ function mount() {
   host.appendChild(activity);
   host.appendChild(thought);
   host.appendChild(happy.row);
+  host.appendChild(energy.row);
   host.appendChild(hunger.row);
-  host.appendChild(patience.row);
+  host.appendChild(thirst.row);
+  host.appendChild(relief.row);
   host.appendChild(footer);
 
   close.addEventListener("click", () => {
@@ -77,7 +81,7 @@ function mount() {
     markUiDirty();
   });
 
-  refs = { name, party, activity, thought, happy, hunger, patience, footer };
+  refs = { name, party, activity, thought, happy, energy, hunger, thirst, relief, footer };
   mounted = true;
 }
 
@@ -115,14 +119,16 @@ export function renderGuestInspector(state) {
   const setMeter = (m, value, warnWhenLow, lowGood) => {
     const pct = Math.max(0, Math.min(100, Math.round(value)));
     m.fill.style.width = `${pct}%`;
-    // lowGood meters (hunger) are bad when high; others bad when low.
+    // lowGood meters (hunger/thirst/relief) are bad when high; others bad when low.
     const bad = lowGood ? pct > 64 : pct < (warnWhenLow ?? 40);
     setClass(m.fill, "warn", bad);
     setClass(m.fill, "good", !bad);
   };
   setMeter(refs.happy, guest.happiness, 45, false);
+  setMeter(refs.energy, guest.energy ?? 100, 30, false);
   setMeter(refs.hunger, guest.hunger, null, true);
-  setMeter(refs.patience, guest.patience, 30, false);
+  setMeter(refs.thirst, guest.thirst ?? 0, null, true);
+  setMeter(refs.relief, guest.relief ?? 0, null, true);
 
-  setText(refs.footer, `${guest.activities} experiences enjoyed`);
+  setText(refs.footer, `${guest.activities} ride${guest.activities === 1 ? "" : "s"} enjoyed`);
 }

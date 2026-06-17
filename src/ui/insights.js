@@ -153,6 +153,23 @@ export function buildInsights(state) {
     });
   }
 
+  // Surface the single most pressing unmet guest need so the player knows which
+  // amenity to build next.
+  if (state.guests.length >= 5) {
+    const avg = (key, fallback = 0) =>
+      state.guests.reduce((sum, g) => sum + (g[key] ?? fallback), 0) / state.guests.length;
+    const needSignals = [
+      { key: "relief", value: avg("relief"), threshold: 74, title: "Guests need restrooms", detail: "Relief is running high — add a Restroom so guests stay comfortable." },
+      { key: "thirst", value: avg("thirst"), threshold: 72, title: "Guests are thirsty", detail: "Add a Drink Kiosk near the busy paths to quench thirst." },
+      { key: "hunger", value: avg("hunger"), threshold: 74, title: "Guests are hungry", detail: "Open another Food Stall so queues for food stay short." },
+      { key: "tired", value: 100 - avg("energy", 100), threshold: 74, title: "Guests are worn out", detail: "Place Benches so tired guests can rest and stay longer." },
+    ];
+    const pressing = needSignals.filter((n) => n.value >= n.threshold).sort((a, b) => b.value - a.value)[0];
+    if (pressing) {
+      insights.push({ key: `need-${pressing.key}`, tone: "warn", title: pressing.title, detail: pressing.detail });
+    }
+  }
+
   if (crowded.length) {
     insights.push({
       key: `crowd-${crowded[0].id}`,

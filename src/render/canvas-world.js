@@ -5,6 +5,7 @@ import { tileKey, inBounds } from "../util/grid.js";
 import { tileToScreen } from "../util/iso.js";
 import { canPlaceTool } from "../sim/placement.js";
 import { getAtmosphereModifiers } from "../sim/atmosphere.js";
+import { STAFF_TYPES } from "../data/staff.js";
 
 function drawAsset(state, ctx, image, screenX, screenY, width, height, anchorY, options = {}) {
   if (!image) return;
@@ -156,12 +157,13 @@ function drawObject(state, ctx, object) {
     ctx.save();
     ctx.font = `${11 * state.camera.zoom + 6}px "Trebuchet MS", sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillStyle = "#f9f3dc";
-    ctx.fillText(
-      object.riders.length ? "Running" : `Q ${object.queue.length}`,
-      screen.x,
-      labelY,
-    );
+    if (object.broken) {
+      ctx.fillStyle = "#ff8a7a";
+      ctx.fillText("⚠ Closed", screen.x, labelY);
+    } else {
+      ctx.fillStyle = "#f9f3dc";
+      ctx.fillText(object.riders.length ? "Running" : `Q ${object.queue.length}`, screen.x, labelY);
+    }
     ctx.restore();
   }
 }
@@ -310,6 +312,40 @@ function drawAtmosphere(state, ctx, canvas) {
   }
 }
 
+function drawStaff(state, ctx, worker) {
+  const def = STAFF_TYPES[worker.type];
+  if (!def) return;
+  const zoom = state.camera.zoom;
+  const screen = tileToScreen(state, worker.x, worker.y);
+  const baseY = screen.y + TILE_HEIGHT * 0.62 * zoom;
+  const size = 11 * zoom + 2;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+  ctx.beginPath();
+  ctx.ellipse(screen.x, baseY + 6, size * 1.0, size * 0.44, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body in the staff colour, with a paler cap so they read as uniformed.
+  ctx.fillStyle = def.color;
+  ctx.fillRect(screen.x - size * 0.52, baseY - size * 1.12, size * 1.04, size * 1.05);
+  ctx.fillStyle = "#fdf6e6";
+  ctx.beginPath();
+  ctx.arc(screen.x, baseY - size * 1.85, size * 0.66, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = def.color;
+  ctx.fillRect(screen.x - size * 0.7, baseY - size * 2.2, size * 1.4, size * 0.42);
+  ctx.restore();
+
+  if (zoom > 0.55) {
+    ctx.save();
+    ctx.font = `${Math.round(11 * zoom + 3)}px "Trebuchet MS", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(def.icon, screen.x, baseY - size * 3.0);
+    ctx.restore();
+  }
+}
+
 export function render(state, ctx, canvas) {
   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
   drawBackdrop(state, ctx, canvas);
@@ -331,10 +367,14 @@ export function render(state, ctx, canvas) {
   for (const guest of state.guests) {
     drawables.push({ depth: guest.x + guest.y, kind: "guest", payload: guest });
   }
+  for (const worker of state.staff) {
+    drawables.push({ depth: worker.x + worker.y, kind: "staff", payload: worker });
+  }
   drawables.sort((a, b) => a.depth - b.depth);
 
   for (const item of drawables) {
     if (item.kind === "object") drawObject(state, ctx, item.payload);
+    else if (item.kind === "staff") drawStaff(state, ctx, item.payload);
     else drawGuest(state, ctx, item.payload);
   }
 

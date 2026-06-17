@@ -16,6 +16,7 @@ import { initMobileTabs } from "./ui/mobile-tabs.js";
 import { bindSettingsPanel, applySettingsToDocument } from "./ui/settings-panel.js";
 import { bindGuestInspector } from "./ui/guest-inspector.js";
 import { bindBuildControls } from "./ui/build-controls.js";
+import { bindStaffPanel } from "./ui/staff-panel.js";
 import { maybeStartTutorial } from "./ui/tutorial.js";
 import { bindKeyboard } from "./input/keyboard.js";
 import { bindPointer } from "./input/pointer.js";
@@ -46,6 +47,7 @@ async function bootstrap() {
   bindSettingsPanel(state);
   bindGuestInspector(state);
   bindBuildControls(state);
+  bindStaffPanel(state);
   initControlsPopover();
   initMobileTabs();
 

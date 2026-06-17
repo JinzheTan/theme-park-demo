@@ -1,0 +1,21 @@
+<svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="112" cy="198" rx="60" ry="18" fill="#132B31" fill-opacity=".24"/>
+  <!-- counter body -->
+  <path d="M54 96C54 80 67 67 83 67H137C153 67 166 80 166 96V166H54V96Z" fill="#FCE7B5"/>
+  <path d="M54 138H166V166H54V138Z" fill="#8AC7D7" fill-opacity=".5"/>
+  <!-- awning (teal to read as drinks, distinct from food's coral) -->
+  <path d="M44 86C44 66 60 50 80 50H140C160 50 176 66 176 86V100H44V86Z" fill="#3DAEC6"/>
+  <path d="M44 86C44 66 60 50 80 50H140C160 50 176 66 176 86V93H44V93Z" fill="#7FD0DF" fill-opacity=".7"/>
+  <path d="M44 100l16-9 16 9 16-9 16 9 16-9 16 9 16-9 16 9V100H44Z" fill="#2E97AE"/>
+  <!-- sign cup -->
+  <rect x="92" y="62" width="36" height="34" rx="6" fill="#FFF6DE"/>
+  <path d="M99 72h22l-3 18h-16l-3-18Z" fill="#F28C66"/>
+  <rect x="106" y="64" width="8" height="9" rx="3" fill="#F3D089"/>
+  <!-- drink dispensers on the counter -->
+  <rect x="70" y="112" width="20" height="26" rx="4" fill="#F47A93"/>
+  <rect x="74" y="116" width="12" height="10" rx="2" fill="#FFF1D0" fill-opacity=".8"/>
+  <rect x="130" y="112" width="20" height="26" rx="4" fill="#8FD7AA"/>
+  <rect x="134" y="116" width="12" height="10" rx="2" fill="#FFF1D0" fill-opacity=".8"/>
+  <circle cx="72" cy="178" r="8" fill="#F3D089"/>
+  <circle cx="148" cy="178" r="8" fill="#F3D089"/>
+</svg>
