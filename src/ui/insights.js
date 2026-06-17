@@ -1,6 +1,8 @@
 import { GROWTH_MILESTONES, growthLabel } from "../data/growth.js";
+import { OBJECTIVES } from "../data/objectives.js";
 import { SIM } from "../data/tuning.js";
 import { isObjectOperational } from "../sim/park.js";
+import { starString } from "../sim/rating.js";
 
 function operationalObjects(state) {
   return [...state.objects.values()].filter(
@@ -85,6 +87,16 @@ export function getGoalItems(state) {
 
   const items = [];
 
+  const rating = state.parkRating ?? 0;
+  items.push({
+    key: "rating",
+    label: "Park rating",
+    chip: `${rating.toFixed(1)}★`,
+    tone: "good",
+    detail: `${starString(rating)} — blended from happiness, cleanliness, variety, and growth.`,
+    current: true,
+  });
+
   if (nextMilestone) {
     items.push({
       key: "next-tier",
@@ -120,6 +132,21 @@ export function getGoalItems(state) {
     tone: state.weeklyProfit < 0 ? "warn" : "good",
     detail: "Positive weekly cashflow lets you expand without stalling out on upkeep.",
   });
+
+  // Campaign objectives — show the next few unfinished goals, then the rest.
+  const completed = state.completedObjectives ?? new Set();
+  const ordered = [...OBJECTIVES].sort((a, b) => Number(completed.has(a.id)) - Number(completed.has(b.id)));
+  for (const objective of ordered) {
+    const done = completed.has(objective.id);
+    items.push({
+      key: `obj-${objective.id}`,
+      label: objective.label,
+      chip: done ? "✓ Done" : `+$${objective.reward}`,
+      tone: done ? "good" : "warn",
+      detail: objective.detail,
+      current: false,
+    });
+  }
 
   return items;
 }

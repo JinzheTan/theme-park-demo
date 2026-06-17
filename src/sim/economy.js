@@ -9,6 +9,7 @@ import { addEvent } from "./events.js";
 import { getAtmosphereModifiers } from "./atmosphere.js";
 import { accrueWeeklyInterest, updateFinanceSafety } from "./finance.js";
 import { marketingSpawnBoost } from "./shows.js";
+import { computeParkRating } from "./rating.js";
 
 export function updateEconomy(state, deltaTime) {
   state.dayClock += deltaTime;
@@ -116,6 +117,8 @@ export function computeParkMetrics(state) {
       999,
     ),
   );
+
+  state.parkRating = computeParkRating(state);
 }
 
 export function maybeAwardGrowthMilestones(state) {

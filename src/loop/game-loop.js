@@ -7,6 +7,7 @@ import { updateStaff } from "../sim/staff.js";
 import { updateShows } from "../sim/shows.js";
 import { updateAtmosphere } from "../sim/atmosphere.js";
 import { evaluateAchievements } from "../sim/achievements.js";
+import { evaluateObjectives, evaluateUnlocks } from "../sim/objectives.js";
 import { sampleStats } from "../sim/stats.js";
 import { autoSaveTick } from "../core/save-game.js";
 import { updateCamera } from "../render/camera.js";
@@ -28,6 +29,8 @@ export function stepFrame(state, canvas, ctx, minimapCanvas, minimapCtx, realDt,
   computeParkMetrics(state);
   maybeAwardGrowthMilestones(state);
   evaluateAchievements(state);
+  evaluateObjectives(state);
+  evaluateUnlocks(state);
   autoSaveTick(state, realDt);
 
   state.uiClock += realDt;

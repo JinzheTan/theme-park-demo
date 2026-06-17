@@ -1,5 +1,6 @@
 import { dom } from "./dom.js";
 import { TOOLS, TOOL_GROUPS } from "../data/tools.js";
+import { isToolUnlocked, unlockLabel } from "../data/unlocks.js";
 import { markUiDirty } from "../core/state.js";
 import { updateHoverCard } from "./hover-card.js";
 import { el, setClass } from "./diff.js";
@@ -61,6 +62,15 @@ export function renderToolButtons(state) {
     const active = toolId === state.selectedTool;
     setClass(btn, "active", active);
     setClass(btn, "glass--active", active);
+
+    const locked = !isToolUnlocked(state, toolId);
+    setClass(btn, "locked", locked);
+    const costTag = btn.querySelector(".cost-tag");
+    if (costTag) {
+      const tool = TOOLS.find((t) => t.id === toolId);
+      costTag.textContent = locked ? "🔒" : tool?.cost ? `$${tool.cost}` : "Tool";
+    }
+    btn.title = locked ? `Locked — ${unlockLabel(toolId)}` : TOOLS.find((t) => t.id === toolId)?.detail ?? "";
   }
 }
 

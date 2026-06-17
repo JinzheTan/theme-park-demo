@@ -1,6 +1,8 @@
 import { OBJECT_DEFS } from "../data/objects.js";
 import { ECONOMY } from "../data/tuning.js";
+import { isToolUnlocked, unlockLabel } from "../data/unlocks.js";
 import { PROTECTED_PATH_KEYS } from "../core/constants.js";
+import { isTileOwned, isPlotOwned, isPlotBuyable, plotForTile, plotCost, buyPlotAt } from "./land.js";
 import { tileKey, getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
 import { playSfx } from "../core/audio.js";
@@ -22,6 +24,15 @@ export function canPlaceTool(state, toolId, x, y) {
     return { ok: true, reason: "Click a guest to follow them" };
   }
 
+  if (toolId === "land") {
+    const { px, py } = plotForTile(x, y);
+    if (isPlotOwned(state, px, py)) return { ok: false, reason: "You already own this land" };
+    if (!isPlotBuyable(state, px, py)) return { ok: false, reason: "Buy land bordering your park" };
+    const cost = plotCost(state);
+    if (state.money < cost) return { ok: false, reason: `Need $${cost} for this plot` };
+    return { ok: true, reason: `Buy this plot — $${cost}` };
+  }
+
   if (toolId === "remove") {
     if (tile.objectId) {
       const object = state.objects.get(tile.objectId);
@@ -38,6 +49,7 @@ export function canPlaceTool(state, toolId, x, y) {
   }
 
   if (toolId === "path") {
+    if (!isTileOwned(state, x, y)) return { ok: false, reason: "Buy this land first" };
     if (tile.terrain !== "grass") return { ok: false, reason: "Paths need dry ground" };
     if (tile.objectId) return { ok: false, reason: "Object blocks this tile" };
     if (tile.path) return { ok: false, reason: "Path already laid" };
@@ -47,6 +59,8 @@ export function canPlaceTool(state, toolId, x, y) {
 
   const def = OBJECT_DEFS[toolId];
   if (!def) return { ok: false, reason: "Unknown tool" };
+  if (!isToolUnlocked(state, toolId)) return { ok: false, reason: `Locked — ${unlockLabel(toolId)}` };
+  if (!isTileOwned(state, x, y)) return { ok: false, reason: "Buy this land first" };
 
   if (tile.terrain !== "grass") return { ok: false, reason: "Only placeable on grass" };
   if (tile.path) return { ok: false, reason: "Clear the path first" };
@@ -70,6 +84,10 @@ export function useToolAt(state, x, y) {
   if (toolId === "inspect") return false;
   const verdict = canPlaceTool(state, toolId, x, y);
   if (!verdict.ok) return false;
+
+  if (toolId === "land") {
+    return buyPlotAt(state, x, y);
+  }
 
   // Snapshot the pre-change build state once per interaction so a click or a
   // whole drag-stroke can be undone as a single step.

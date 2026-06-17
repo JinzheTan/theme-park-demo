@@ -5,6 +5,7 @@ import { tileKey, inBounds } from "../util/grid.js";
 import { tileToScreen } from "../util/iso.js";
 import { canPlaceTool } from "../sim/placement.js";
 import { getAtmosphereModifiers } from "../sim/atmosphere.js";
+import { isTileOwned, isPlotBuyable, plotForTile } from "../sim/land.js";
 import { STAFF_TYPES } from "../data/staff.js";
 
 function drawAsset(state, ctx, image, screenX, screenY, width, height, anchorY, options = {}) {
@@ -121,6 +122,23 @@ function drawTile(state, ctx, tile) {
   const fadeDistance = tileFocusDistance(state, tile);
   if (state.settings?.focusActiveArea !== false && fadeDistance > 0) {
     drawDiamondFill(state, ctx, tile.x, tile.y, "#0d2430", clamp(0.08 + fadeDistance * 0.03, 0.08, 0.28));
+  }
+}
+
+// Drawn as its own pass after every ground tile is painted, so neighbouring
+// grass images (which overlap a little in iso) can't paint over the shading.
+// Unowned land reads as off-limits; with the Buy Land tool active, plots you
+// can purchase glow gold instead.
+function drawLandOverlay(state, ctx) {
+  const landTool = state.selectedTool === "land";
+  for (const tile of state.orderedTiles) {
+    if (isTileOwned(state, tile.x, tile.y)) continue;
+    const { px, py } = plotForTile(tile.x, tile.y);
+    if (landTool && isPlotBuyable(state, px, py)) {
+      drawDiamondFill(state, ctx, tile.x, tile.y, "#f3d089", 0.34);
+    } else {
+      drawDiamondFill(state, ctx, tile.x, tile.y, "#0a1c26", 0.6);
+    }
   }
 }
 
@@ -405,6 +423,7 @@ export function render(state, ctx, canvas) {
   for (const tile of state.orderedTiles) {
     drawTile(state, ctx, tile);
   }
+  drawLandOverlay(state, ctx);
 
   // Pass 2 — paint objects + guests in iso depth order so closer items sit on
   // top of further items, but everything sits on top of the ground.

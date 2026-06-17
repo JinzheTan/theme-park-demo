@@ -4,6 +4,7 @@ import { markUiDirty } from "../core/state.js";
 import { tileKey, inBounds, getTile, neighbors4 } from "../util/grid.js";
 import { rand } from "../util/math.js";
 import { addEvent } from "./events.js";
+import { initOwnedPlots } from "./land.js";
 import { ECONOMY } from "../data/tuning.js";
 
 export function isObjectOperational(state, object) {
@@ -103,6 +104,7 @@ export function createGrid(state) {
   }
 
   state.orderedTiles = state.tiles.flat().sort((a, b) => a.x + a.y - (b.x + b.y));
+  initOwnedPlots(state);
   updateActiveTileBounds(state);
 }
 

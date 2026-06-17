@@ -16,7 +16,8 @@ An isometric, browser-based theme-park simulation. Build paths, place rides, wat
 - **Day/night, weather & seasons** — a rolling time-of-day, rotating weather (sunny → cloudy → overcast → rain), and four seasons that nudge attendance, mood, and appetite, with canvas tints and rain, shown live in the HUD.
 - **Events** — launch fireworks shows to thrill the crowd and run marketing campaigns to pull extra guests, from the Events desk.
 - **Achievements** — 14 account-level badges that persist across parks, with celebratory toasts and chimes.
-- **Growth milestones** — per-park tiers (Budding → Destination) that pay expansion grants.
+- **Progression** — a 1–5 star park rating, a campaign objectives checklist, growth-tier milestones, and a tech tree that unlocks bigger rides as you serve more guests.
+- **Land expansion** — start on a central plot and buy adjacent land to grow the park outward.
 - **Trends dashboard** — live sparkline charts of cash, attendance, happiness, and growth over time.
 - **Undo / redo** — every build action is reversible (`Ctrl+Z` / `Ctrl+Y`, or the action-bar buttons); a drag-painted path undoes in one step.
 - **Interactive tutorial** — a first-run coach walks new operators through paths, rides, and guests; replayable from **Settings**.

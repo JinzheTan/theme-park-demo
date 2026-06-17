@@ -58,6 +58,19 @@
   font-weight: 850;
 }
 
+.tool-button.locked {
+  opacity: 0.6;
+  filter: grayscale(0.4);
+}
+
+.tool-button.locked strong {
+  color: var(--muted);
+}
+
+.tool-button.locked .cost-tag {
+  background: rgba(98, 121, 129, 0.2);
+}
+
 .tool-button:hover {
   transform: translateY(-1px);
   border-color: var(--accent-border);

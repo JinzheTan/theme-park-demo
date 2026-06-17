@@ -1,6 +1,7 @@
 import { state } from "./core/state.js";
 import { createGrid, seedPark } from "./sim/park.js";
 import { computeParkMetrics } from "./sim/economy.js";
+import { primeUnlocks } from "./sim/objectives.js";
 import { addEvent } from "./sim/events.js";
 import { hasAutoSave, restoreAutoSave } from "./core/save-game.js";
 import { unlockAudio } from "./core/audio.js";
@@ -82,6 +83,7 @@ async function bootstrap() {
   updateViewportResponsiveState(state);
   resize();
   computeParkMetrics(state);
+  primeUnlocks(state);
   renderPanels(state);
   if (restoredFromAutoSave) {
     addEvent(state, "Welcome back", `Your park resumed at week ${state.day} with $${Math.round(state.money)} on hand.`);

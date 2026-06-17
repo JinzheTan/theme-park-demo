@@ -5,9 +5,11 @@ import { TOOLS } from "../data/tools.js";
 import { growthLabel } from "../data/growth.js";
 import { isObjectOperational } from "../sim/park.js";
 import { getAtmosphereModifiers } from "../sim/atmosphere.js";
+import { starString } from "../sim/rating.js";
 import { getGuestActivityItems, getGoalItems, buildInsights, getOperationsItems } from "./insights.js";
 import { renderAchievements } from "./achievements-panel.js";
 import { renderGuestInspector } from "./guest-inspector.js";
+import { renderToolButtons } from "./tools-panel.js";
 import { renderStats } from "./stats-panel.js";
 import { renderStaff } from "./staff-panel.js";
 import { renderFinance } from "./finance-panel.js";
@@ -65,8 +67,9 @@ export function renderHeadlineMetrics(state) {
   setText(metricRefs.happiness.span, "Happiness");
   setText(metricRefs.cleanliness.strong, `${state.cleanliness}%`);
   setText(metricRefs.cleanliness.span, "Cleanliness");
-  setText(metricRefs.growth.strong, growthLabel(state.growthScore));
-  setText(metricRefs.growth.span, `Score ${state.growthScore}`);
+  const rating = state.parkRating ?? 0;
+  setText(metricRefs.growth.strong, starString(rating));
+  setText(metricRefs.growth.span, `${growthLabel(state.growthScore)} · ${rating.toFixed(1)}★`);
 
   const atmosphere = getAtmosphereModifiers(state);
   if (atmosphere.active) {
@@ -338,6 +341,7 @@ export function renderPanels(state) {
   renderEventLog(state);
   renderFloatingTools(state);
   renderGuestInspector(state);
+  renderToolButtons(state);
   renderBuildControls(state);
   renderTutorial(state);
   flushToasts(state);

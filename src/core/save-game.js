@@ -1,6 +1,7 @@
 import { OBJECT_DEFS } from "../data/objects.js";
 import { createState, markUiDirty } from "./state.js";
 import { createGrid, refreshParkGraph, seedPark } from "../sim/park.js";
+import { initOwnedPlots } from "../sim/land.js";
 import { computeParkMetrics } from "../sim/economy.js";
 import { addEvent } from "../sim/events.js";
 
@@ -145,6 +146,13 @@ function applyPlainState(state, plain) {
   state.staff = Array.isArray(plain.staff) ? plain.staff.map((worker) => ({ ...worker, route: [] })) : [];
   state.feed = Array.isArray(plain.feed) ? plain.feed.map((entry) => ({ ...entry })) : [];
   state.claimedMilestones = new Set(plain.claimedMilestones ?? []);
+  state.completedObjectives = new Set(plain.completedObjectives ?? []);
+  state.announcedUnlocks = new Set(plain.announcedUnlocks ?? []);
+  if (Array.isArray(plain.ownedPlots) && plain.ownedPlots.length) {
+    state.ownedPlots = new Set(plain.ownedPlots);
+  } else {
+    initOwnedPlots(state);
+  }
   refreshParkGraph(state);
   computeParkMetrics(state);
   markUiDirty();
@@ -176,6 +184,9 @@ export function serializePark(state) {
     staff: state.staff.map((worker) => ({ ...worker, route: [] })),
     feed: state.feed.map((entry) => ({ ...entry })),
     claimedMilestones: [...state.claimedMilestones],
+    completedObjectives: [...state.completedObjectives],
+    announcedUnlocks: [...state.announcedUnlocks],
+    ownedPlots: [...state.ownedPlots],
   };
 
   for (const key of STATE_KEYS) {

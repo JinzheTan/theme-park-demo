@@ -67,3 +67,13 @@ Phase 3 — living world & events (C track), COMPLETE:
 - Guest types (guest-flavor.js GUEST_KINDS): family/thrill/tourist/foodie with excitement and food biases that shape ride/food choice; shown in the inspector.
 - New achievements: Showstopper (3 fireworks), Four Seasons (reach winter). Events panel under the Money tab.
 - Verified: lint:dead 64 files, npm run qa green, browser checks: fireworks render + boost, season rotation to winter, marketing attendance bump (11→18), guest-kind distribution + inspector label, no console errors.
+
+Phase 4 — progression & content (B track), COMPLETE:
+- Star rating (sim/rating.js): a 0-5 score blended from happiness, cleanliness, variety, and growth; shown as ★ in the HUD growth pill and the Goals panel.
+- Objectives (data/objectives.js + sim/objectives.js): a per-park campaign checklist with cash rewards and toasts, listed in the Goals panel; persisted in saves.
+- Tech tree (data/unlocks.js): wheel/fountain/coaster start locked and open as guestsServed grows (or 4★ for the coaster); palette shows a 🔒 badge + requirement; unlock toast on opening. Enforced in canPlaceTool.
+- Land expansion (sim/land.js): the buildable park is a set of owned 7x7 plots; the rest is dimmed and off-limits. A "Buy Land" tool purchases adjacent plots at an escalating price; ownership persisted and enforced in placement. Dimming drawn in a dedicated overlay pass so neighbouring grass can't paint over it.
+- New achievements (Showstopper, Four Seasons) earlier; objectives culminate in a 5-star resort.
+- Verified: lint:dead 69 files, npm run qa green, browser checks: rating in HUD, objective auto-complete + reward, locked palette + unlock on progress, buy-land flow + ownership dimming, no console errors.
+
+ALL FOUR PHASES COMPLETE (D experience, A management depth, C living world, B progression).
