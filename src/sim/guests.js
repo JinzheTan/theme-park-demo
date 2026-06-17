@@ -1,7 +1,7 @@
 import { SPAWN_TILE } from "../core/constants.js";
 import { GUEST_COLORS } from "../data/objects.js";
 import { GUEST } from "../data/tuning.js";
-import { GUEST_FIRST_NAMES, GUEST_LAST_INITIALS, pickThought } from "../data/guest-flavor.js";
+import { GUEST_FIRST_NAMES, GUEST_LAST_INITIALS, pickThought, pickGuestKind } from "../data/guest-flavor.js";
 import { clamp, rand, sample, manhattan } from "../util/math.js";
 import { getTile } from "../util/grid.js";
 import { markUiDirty } from "../core/state.js";
@@ -28,6 +28,7 @@ export function createGuest(state) {
   const spawnTile = getTile(state, SPAWN_TILE.x, SPAWN_TILE.y);
   if (!spawnTile?.path) return;
 
+  const kind = pickGuestKind();
   const guest = {
     id: state.nextGuestId++,
     x: SPAWN_TILE.x,
@@ -50,6 +51,9 @@ export function createGuest(state) {
     speed: rand(...GUEST.SPEED_RANGE),
     name: `${sample(GUEST_FIRST_NAMES)} ${sample(GUEST_LAST_INITIALS)}.`,
     partySize: Math.random() < 0.45 ? 1 : Math.ceil(rand(2, 4)),
+    kind: kind.id,
+    excitementBias: kind.excitementBias,
+    foodBias: kind.foodBias,
     spend: 0,
     thought: null,
     thoughtTtl: 0,
@@ -114,7 +118,7 @@ export function chooseGuestDestination(state, guest) {
   const needs = [
     { serves: "relief", urgency: guest.relief ?? 0, threshold: GUEST.RELIEF_TO_PRIORITIZE },
     { serves: "thirst", urgency: guest.thirst ?? 0, threshold: GUEST.THIRST_TO_PRIORITIZE },
-    { serves: "hunger", urgency: guest.hunger, threshold: foodPriorityThreshold },
+    { serves: "hunger", urgency: guest.hunger, threshold: foodPriorityThreshold - (guest.foodBias ?? 0) },
     { serves: "energy", urgency: 100 - (guest.energy ?? 100), threshold: 100 - GUEST.ENERGY_LOW_PRIORITIZE },
   ];
   const pressing = needs
@@ -138,6 +142,7 @@ export function chooseGuestDestination(state, guest) {
         object,
         score:
           object.stats.excitement +
+          (guest.excitementBias ?? 0) * (object.stats.excitement / 20) +
           rand(-3, 6) -
           object.queue.length * 2.2 -
           manhattan(object.entry, guest) * 0.5 -

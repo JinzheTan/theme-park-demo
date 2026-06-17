@@ -81,6 +81,30 @@ export const THOUGHTS = {
   ],
 };
 
+// Guest archetypes. excitementBias skews ride choice (thrill-seekers chase big
+// rides, families prefer gentle ones); foodBias makes some guests seek food
+// sooner. weight controls how common each type is at the gate.
+export const GUEST_KINDS = [
+  { id: "family", label: "Family", icon: "👨‍👩‍👧", weight: 4, excitementBias: -5, foodBias: 6 },
+  { id: "thrill", label: "Thrill-seeker", icon: "🎢", weight: 3, excitementBias: 9, foodBias: -2 },
+  { id: "tourist", label: "Tourist", icon: "📷", weight: 3, excitementBias: 0, foodBias: 2 },
+  { id: "foodie", label: "Foodie", icon: "🍦", weight: 2, excitementBias: -1, foodBias: 13 },
+];
+
+export function pickGuestKind() {
+  const total = GUEST_KINDS.reduce((sum, kind) => sum + kind.weight, 0);
+  let roll = Math.random() * total;
+  for (const kind of GUEST_KINDS) {
+    roll -= kind.weight;
+    if (roll <= 0) return kind;
+  }
+  return GUEST_KINDS[0];
+}
+
+export function guestKind(id) {
+  return GUEST_KINDS.find((kind) => kind.id === id) ?? GUEST_KINDS[0];
+}
+
 export function pickThought(key, label = "") {
   const pool = THOUGHTS[key];
   if (!pool || !pool.length) return null;

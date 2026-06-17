@@ -19,6 +19,8 @@ function buildContext(state) {
     growthScore: state.growthScore,
     sceneryScore,
     weather: state.weather,
+    season: state.season ?? 0,
+    showsLaunched: state.showsLaunched ?? 0,
     day: state.day,
     hasType: (type) => types.has(type),
   };

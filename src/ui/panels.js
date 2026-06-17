@@ -11,6 +11,7 @@ import { renderGuestInspector } from "./guest-inspector.js";
 import { renderStats } from "./stats-panel.js";
 import { renderStaff } from "./staff-panel.js";
 import { renderFinance } from "./finance-panel.js";
+import { renderEvents } from "./events-panel.js";
 import { renderBuildControls } from "./build-controls.js";
 import { renderTutorial } from "./tutorial.js";
 import { flushToasts } from "./toast.js";
@@ -69,8 +70,8 @@ export function renderHeadlineMetrics(state) {
 
   const atmosphere = getAtmosphereModifiers(state);
   if (atmosphere.active) {
-    setText(metricRefs.atmosphere.strong, `${atmosphere.phase.icon} ${atmosphere.phase.label}`);
-    setText(metricRefs.atmosphere.span, `${atmosphere.weather.icon} ${atmosphere.weather.label}`);
+    setText(metricRefs.atmosphere.strong, `${atmosphere.season.icon} ${atmosphere.season.label}`);
+    setText(metricRefs.atmosphere.span, `${atmosphere.phase.icon} ${atmosphere.weather.icon} ${atmosphere.weather.label}`);
   } else {
     setText(metricRefs.atmosphere.strong, "Sandbox");
     setText(metricRefs.atmosphere.span, "Time & weather off");
@@ -330,6 +331,7 @@ export function renderPanels(state) {
   renderStats(state);
   renderStaff(state);
   renderFinance(state);
+  renderEvents(state);
   renderRideStatus(state);
   renderInsights(state);
   renderAchievements(state);

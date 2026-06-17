@@ -12,7 +12,9 @@ An isometric, browser-based theme-park simulation. Build paths, place rides, wat
 - **Staff** — hire Janitors, Mechanics, Entertainers, and Security who roam the park doing their jobs, for an up-front fee plus per-cycle wages.
 - **Ride upkeep** — rides wear and can break down; Mechanics repair them fast (with an external-crew fallback so you're never stuck).
 - **Finance** — set a ticket-pricing strategy and park entry fee with real demand trade-offs, take loans with weekly interest, and a cushioned bailout that keeps a broke park alive instead of ending the game.
-- **Day/night + weather** — a rolling time-of-day and rotating weather (sunny → cloudy → overcast → rain) that nudge attendance, mood, and appetite, with a canvas tint and rain, shown live in the HUD.
+- **Guest types** — families, thrill-seekers, tourists, and foodies arrive with different ride and food preferences.
+- **Day/night, weather & seasons** — a rolling time-of-day, rotating weather (sunny → cloudy → overcast → rain), and four seasons that nudge attendance, mood, and appetite, with canvas tints and rain, shown live in the HUD.
+- **Events** — launch fireworks shows to thrill the crowd and run marketing campaigns to pull extra guests, from the Events desk.
 - **Achievements** — 14 account-level badges that persist across parks, with celebratory toasts and chimes.
 - **Growth milestones** — per-park tiers (Budding → Destination) that pay expansion grants.
 - **Trends dashboard** — live sparkline charts of cash, attendance, happiness, and growth over time.

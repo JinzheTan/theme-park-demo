@@ -104,6 +104,20 @@ export const ACHIEVEMENTS = [
     test: (c) => c.weather === "rain" && c.averageHappiness >= 80 && c.guestsInside >= 8,
   },
   {
+    id: "showstopper",
+    icon: "🎆",
+    label: "Showstopper",
+    detail: "Light up three fireworks shows.",
+    test: (c) => c.showsLaunched >= 3,
+  },
+  {
+    id: "four-seasons",
+    icon: "❄️",
+    label: "Four Seasons",
+    detail: "Keep the park running all the way into winter.",
+    test: (c) => c.season >= 3,
+  },
+  {
     id: "fortnight",
     icon: "📅",
     label: "Fortnight",

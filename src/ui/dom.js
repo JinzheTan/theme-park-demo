@@ -12,6 +12,7 @@ export const dom = {
   statsPanel: document.getElementById("statsPanel"),
   staffPanel: document.getElementById("staffPanel"),
   financePanel: document.getElementById("financePanel"),
+  eventsPanel: document.getElementById("eventsPanel"),
   achievementsList: document.getElementById("achievementsList"),
   achievementsCount: document.getElementById("achievementsCount"),
   toastStack: document.getElementById("toastStack"),

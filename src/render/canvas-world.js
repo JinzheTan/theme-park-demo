@@ -292,6 +292,13 @@ function drawAtmosphere(state, ctx, canvas) {
     ctx.restore();
   }
 
+  if (atmosphere.season?.tint) {
+    ctx.save();
+    ctx.fillStyle = atmosphere.season.tint;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
   if (atmosphere.weather.id === "rain") {
     const reduced = Boolean(state.settings?.reducedMotion);
     const drift = reduced ? 0 : (state.timeOfDay * 4200) % 60;
@@ -346,6 +353,47 @@ function drawStaff(state, ctx, worker) {
   }
 }
 
+function drawFireworks(state, ctx, canvas) {
+  if (!state.fireworks.length) return;
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  const reduced = Boolean(state.settings?.reducedMotion);
+  ctx.save();
+  for (const burst of state.fireworks) {
+    const t = burst.age / burst.life;
+    const cx = burst.nx * cw;
+    const cy = burst.ny * ch;
+    const radius = (reduced ? 0.5 : t) * 74 + 6;
+    const alpha = Math.max(0, 1 - t);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = burst.color;
+    ctx.fillStyle = burst.color;
+    ctx.lineWidth = 2;
+    for (let i = 0; i < burst.sparks; i += 1) {
+      const angle = (i / burst.sparks) * Math.PI * 2;
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+      if (!reduced) {
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(angle) * radius * 0.5, cy + Math.sin(angle) * radius * 0.5);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (!reduced && t < 0.3) {
+      ctx.globalAlpha = alpha * (1 - t / 0.3);
+      ctx.fillStyle = "#fff8e0";
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
 export function render(state, ctx, canvas) {
   ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
   drawBackdrop(state, ctx, canvas);
@@ -379,6 +427,7 @@ export function render(state, ctx, canvas) {
   }
 
   drawAtmosphere(state, ctx, canvas);
+  drawFireworks(state, ctx, canvas);
 
   if (
     state.settings?.showBuildPreview !== false &&

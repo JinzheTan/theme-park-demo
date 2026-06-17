@@ -33,6 +33,8 @@ const STATE_KEYS = [
   "timeOfDay",
   "weather",
   "weatherTimer",
+  "season",
+  "showsLaunched",
   "placedByPlayer",
   "peakGuests",
   "nextObjectId",

@@ -59,3 +59,11 @@ Phase 2 — management depth (A track), in progress:
 - Breakdowns & repair (src/sim/breakdown.js): rides wear with use, break down and stop, mechanics repair fast, external crew auto-recovers after a downtime window so no soft-lock. Ride condition shown in Ride Status + "⚠ Closed" canvas label; breakdown toast.
 - Pricing + loans/bankruptcy (src/sim/finance.js + src/ui/finance-panel.js): global ticket-price multiplier (0.6–1.6x) with demand elasticity (high prices damp ride demand) and a park entry fee (revenue per arrival, but dampens spawn). Loans (3 sizes) with weekly compounding interest; manual repay. Cushioned bankruptcy: cash below the floor for a grace window triggers an investor bailout (cash floated to a small positive, debt added, growth-score dinged) instead of game over. Finance panel + "Money" tab; cash/debt insights.
 - Phase 2 COMPLETE (tasks 14-18). Verified: lint:dead 62 files, npm run qa green (rides 5), browser checks: hiring all 4 staff, janitor cleaning, forced breakdown → mechanic repair, needs loop, loans, pricing, and the cushioned bailout firing, with no console errors.
+
+Phase 3 — living world & events (C track), COMPLETE:
+- Fireworks shows (src/sim/shows.js): launchable for cash, canvas particle bursts (drawFireworks), big happiness boost (bigger after dark), toast. Events panel.
+- Four seasons (data/atmosphere.js SEASONS + seasonForDay): rotate every 3 weeks, scale spawn (summer busy, winter quiet), add a faint canvas tint, surfaced in the atmosphere HUD pill (season + phase + weather) with a season-change event.
+- Marketing campaigns (shows.js): timed spend-to-boost-attendance, wired into the spawn rate; Events panel button with a live countdown.
+- Guest types (guest-flavor.js GUEST_KINDS): family/thrill/tourist/foodie with excitement and food biases that shape ride/food choice; shown in the inspector.
+- New achievements: Showstopper (3 fireworks), Four Seasons (reach winter). Events panel under the Money tab.
+- Verified: lint:dead 64 files, npm run qa green, browser checks: fireworks render + boost, season rotation to winter, marketing attendance bump (11→18), guest-kind distribution + inspector label, no console errors.

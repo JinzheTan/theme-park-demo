@@ -1,6 +1,7 @@
 import { dom } from "./dom.js";
 import { el, setText, setClass } from "./diff.js";
 import { markUiDirty } from "../core/state.js";
+import { guestKind } from "../data/guest-flavor.js";
 
 let mounted = false;
 let refs = {};
@@ -105,8 +106,9 @@ export function renderGuestInspector(state) {
   }
   setClass(host, "visible", true);
 
+  const kind = guestKind(guest.kind);
   setText(refs.name, guest.name ?? `Guest #${guest.id}`);
-  setText(refs.party, guest.partySize > 1 ? `Party of ${guest.partySize}` : "Visiting solo");
+  setText(refs.party, `${kind.icon} ${kind.label} · ${guest.partySize > 1 ? `party of ${guest.partySize}` : "solo"}`);
   setText(refs.activity, activityLabel(state, guest));
 
   if (guest.thought) {

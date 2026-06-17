@@ -70,6 +70,21 @@ export const WEATHER_TYPES = {
 
 export const WEATHER_ORDER = ["sunny", "cloudy", "overcast", "rain"];
 
+// Seasons rotate over several in-game weeks, layered on top of the daily cycle.
+// Summer packs the park; winter quiets it. Each adds a faint colour wash.
+export const SEASONS = [
+  { id: "spring", label: "Spring", icon: "🌸", spawn: 1.06, tint: "rgba(255, 212, 224, 0.06)" },
+  { id: "summer", label: "Summer", icon: "☀️", spawn: 1.2, tint: "rgba(255, 236, 170, 0.05)" },
+  { id: "autumn", label: "Autumn", icon: "🍂", spawn: 1.0, tint: "rgba(212, 150, 90, 0.09)" },
+  { id: "winter", label: "Winter", icon: "❄️", spawn: 0.8, tint: "rgba(150, 180, 210, 0.13)" },
+];
+
+export const SEASON_LENGTH_WEEKS = 3;
+
+export function seasonForDay(day) {
+  return Math.floor((Math.max(1, day) - 1) / SEASON_LENGTH_WEEKS) % SEASONS.length;
+}
+
 export function phaseForTimeOfDay(timeOfDay) {
   let current = DAY_PHASES[0];
   for (const phase of DAY_PHASES) {

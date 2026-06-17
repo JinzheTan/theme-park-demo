@@ -8,6 +8,7 @@ import { createGuest } from "./guests.js";
 import { addEvent } from "./events.js";
 import { getAtmosphereModifiers } from "./atmosphere.js";
 import { accrueWeeklyInterest, updateFinanceSafety } from "./finance.js";
+import { marketingSpawnBoost } from "./shows.js";
 
 export function updateEconomy(state, deltaTime) {
   state.dayClock += deltaTime;
@@ -70,11 +71,11 @@ export function updateEconomy(state, deltaTime) {
       SIM.SPAWN_TIMER_RANGE[0],
       SIM.SPAWN_TIMER_RANGE[1],
     );
-    // Busier phases / fair weather shorten the gap between arrivals; quiet
-    // nights, rain, and high gate prices stretch it out.
+    // Busier phases / fair weather / marketing shorten the gap between
+    // arrivals; quiet nights, rain, and high gate prices stretch it out.
     state.guestSpawnTimer = clamp(
-      baseDelay / Math.max(0.4, atmosphere.spawn * feeDamp),
-      SIM.SPAWN_TIMER_RANGE[0] * 0.7,
+      baseDelay / Math.max(0.4, atmosphere.spawn * feeDamp * marketingSpawnBoost(state)),
+      SIM.SPAWN_TIMER_RANGE[0] * 0.6,
       SIM.SPAWN_TIMER_RANGE[1] * 1.8,
     );
     markUiDirty();

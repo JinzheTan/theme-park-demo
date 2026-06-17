@@ -4,6 +4,7 @@ import { updateEconomy, computeParkMetrics, maybeAwardGrowthMilestones } from ".
 import { updateGuests } from "../sim/guests.js";
 import { updateObjects } from "../sim/objects.js";
 import { updateStaff } from "../sim/staff.js";
+import { updateShows } from "../sim/shows.js";
 import { updateAtmosphere } from "../sim/atmosphere.js";
 import { evaluateAchievements } from "../sim/achievements.js";
 import { sampleStats } from "../sim/stats.js";
@@ -21,6 +22,7 @@ export function stepFrame(state, canvas, ctx, minimapCanvas, minimapCtx, realDt,
     updateGuests(state, simDt);
     updateObjects(state, simDt);
     updateStaff(state, simDt);
+    updateShows(state, simDt);
     sampleStats(state, simDt);
   }
   computeParkMetrics(state);

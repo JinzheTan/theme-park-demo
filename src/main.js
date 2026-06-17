@@ -18,6 +18,7 @@ import { bindGuestInspector } from "./ui/guest-inspector.js";
 import { bindBuildControls } from "./ui/build-controls.js";
 import { bindStaffPanel } from "./ui/staff-panel.js";
 import { bindFinancePanel } from "./ui/finance-panel.js";
+import { bindEventsPanel } from "./ui/events-panel.js";
 import { maybeStartTutorial } from "./ui/tutorial.js";
 import { bindKeyboard } from "./input/keyboard.js";
 import { bindPointer } from "./input/pointer.js";
@@ -50,6 +51,7 @@ async function bootstrap() {
   bindBuildControls(state);
   bindStaffPanel(state);
   bindFinancePanel(state);
+  bindEventsPanel(state);
   initControlsPopover();
   initMobileTabs();
 

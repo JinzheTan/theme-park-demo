@@ -1,4 +1,4 @@
-import { ATMOSPHERE, WEATHER_TYPES, WEATHER_ORDER, phaseForTimeOfDay } from "../data/atmosphere.js";
+import { ATMOSPHERE, WEATHER_TYPES, WEATHER_ORDER, SEASONS, phaseForTimeOfDay, seasonForDay } from "../data/atmosphere.js";
 import { rand } from "../util/math.js";
 import { markUiDirty } from "../core/state.js";
 import { addEvent } from "./events.js";
@@ -9,6 +9,7 @@ const NEUTRAL = {
   foodPull: 0,
   phase: phaseForTimeOfDay(0.32),
   weather: WEATHER_TYPES.sunny,
+  season: SEASONS[0],
   active: false,
 };
 
@@ -25,6 +26,14 @@ function pickWeather(excludeId) {
 
 export function updateAtmosphere(state, deltaTime) {
   if (state.settings?.dayNightCycle === false) return;
+
+  const season = seasonForDay(state.day);
+  if (season !== state.season) {
+    state.season = season;
+    const info = SEASONS[season];
+    addEvent(state, "Season change", `${info.icon} ${info.label} settles over Wonderloop Park.`);
+    markUiDirty();
+  }
 
   state.timeOfDay = (state.timeOfDay + deltaTime / ATMOSPHERE.DAY_LENGTH_S) % 1;
 
@@ -47,12 +56,14 @@ export function getAtmosphereModifiers(state) {
   if (state.settings?.dayNightCycle === false) return NEUTRAL;
   const phase = phaseForTimeOfDay(state.timeOfDay);
   const weather = WEATHER_TYPES[state.weather] ?? WEATHER_TYPES.sunny;
+  const season = SEASONS[state.season] ?? SEASONS[0];
   return {
-    spawn: phase.spawn * weather.spawn,
+    spawn: phase.spawn * weather.spawn * season.spawn,
     happyDrift: weather.happyDrift,
     foodPull: weather.foodPull,
     phase,
     weather,
+    season,
     active: true,
   };
 }
