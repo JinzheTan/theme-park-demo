@@ -6,7 +6,7 @@
   top: 66px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: var(--z-overlay-hover);
+  z-index: var(--z-overlay-toast);
   display: grid;
   gap: 8px;
   width: min(360px, calc(100% - 28px));

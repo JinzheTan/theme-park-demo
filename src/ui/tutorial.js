@@ -31,7 +31,7 @@ const STEPS = [
   {
     id: "ride",
     title: "Open an attraction",
-    body: "Pick a ride — the Sky Wheel is a crowd-pleaser — and place it on grass right next to a path so guests can queue.",
+    body: "In the Rides palette, pick the Sun Carousel (it's unlocked from the start) and place it on grass next to a path so guests can queue. Bigger rides unlock as you serve more guests.",
     onEnter: (state, b) => { b.rides = rideCount(state); },
     check: (state, b) => rideCount(state) > (b.rides ?? 0),
   },

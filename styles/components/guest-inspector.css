@@ -2,11 +2,13 @@
 
 .guest-inspector {
   position: absolute;
-  top: 72px;
+  top: 84px;
   left: 16px;
-  z-index: var(--z-overlay-pinned);
+  z-index: var(--z-overlay-panel);
   width: 232px;
   max-width: calc(100% - 32px);
+  max-height: calc(100% - 100px);
+  overflow: auto;
   display: none;
   flex-direction: column;
   gap: 7px;
