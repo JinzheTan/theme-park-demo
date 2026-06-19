@@ -18,28 +18,31 @@ body.theme-dark {
   --shadow-strong: rgba(0, 0, 0, 0.6);
 
   --glass-1-bg:
-    linear-gradient(145deg, rgba(46, 66, 80, 0.62), rgba(28, 44, 56, 0.34)),
-    rgba(18, 32, 42, 0.52);
-  --glass-1-border: rgba(255, 255, 255, 0.14);
+    linear-gradient(150deg, rgba(70, 96, 114, 0.34), rgba(28, 44, 56, 0.16)),
+    rgba(18, 32, 42, 0.28);
+  --glass-1-border: rgba(255, 255, 255, 0.16);
   --glass-1-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 14px 28px rgba(0, 0, 0, 0.42);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 8px 16px -10px rgba(255, 255, 255, 0.12),
+    0 12px 28px rgba(0, 0, 0, 0.42);
 
   --glass-2-bg:
-    linear-gradient(145deg, rgba(50, 72, 88, 0.7), rgba(30, 46, 58, 0.4)),
-    rgba(20, 35, 46, 0.6);
-  --glass-2-border: rgba(255, 255, 255, 0.16);
+    linear-gradient(150deg, rgba(74, 100, 120, 0.36), rgba(30, 46, 58, 0.18)),
+    rgba(20, 35, 46, 0.3);
+  --glass-2-border: rgba(255, 255, 255, 0.18);
   --glass-2-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 22px 50px rgba(0, 0, 0, 0.5);
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 9px 18px -11px rgba(255, 255, 255, 0.14),
+    0 18px 44px rgba(0, 0, 0, 0.5);
 
   --glass-3-bg:
-    linear-gradient(150deg, rgba(40, 60, 74, 0.6), rgba(22, 36, 47, 0.34)),
-    rgba(16, 29, 39, 0.66);
-  --glass-3-border: rgba(255, 255, 255, 0.18);
+    linear-gradient(155deg, rgba(60, 84, 102, 0.32), rgba(22, 36, 47, 0.14)),
+    rgba(16, 29, 39, 0.32);
+  --glass-3-border: rgba(255, 255, 255, 0.2);
   --glass-3-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 32px 70px rgba(0, 0, 0, 0.56);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 11px 22px -13px rgba(255, 255, 255, 0.14),
+    0 26px 60px rgba(0, 0, 0, 0.56);
 
   --accent-border: rgba(230, 180, 80, 0.6);
   --accent-bg:

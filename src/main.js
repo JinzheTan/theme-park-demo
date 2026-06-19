@@ -28,9 +28,26 @@ import { bindMinimap } from "./input/minimap-input.js";
 import { startGameLoop } from "./loop/game-loop.js";
 import { installQaHooks } from "./core/qa-hooks.js";
 
+// Liquid Glass edge refraction relies on an SVG filter used as a
+// backdrop-filter, which only Chromium renders. Gate it behind `lg-on` so
+// Safari/Firefox keep a clean blurred-glass fallback instead of a broken layer.
+function enableLiquidGlass() {
+  try {
+    const ua = navigator.userAgent;
+    const isSafari = /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR|Brave/.test(ua);
+    const supported =
+      window.CSS && typeof CSS.supports === "function" &&
+      CSS.supports("backdrop-filter", "url(#x)") && !isSafari;
+    if (supported) document.documentElement.classList.add("lg-on");
+  } catch {
+    // Keep the blur fallback.
+  }
+}
+
 async function bootstrap() {
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   window.scrollTo(0, 0);
+  enableLiquidGlass();
 
   createGrid(state);
   seedPark(state);

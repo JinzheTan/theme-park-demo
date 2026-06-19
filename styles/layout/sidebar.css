@@ -3,7 +3,7 @@
   overflow: auto;
   display: grid;
   grid-auto-rows: max-content;
-  gap: 12px;
+  gap: 10px;
   padding: 0 4px 0 0;
   scrollbar-color: rgba(48, 119, 131, 0.34) transparent;
 }
@@ -15,9 +15,9 @@
 }
 
 .vision-card {
-  padding: 12px;
+  padding: 10px;
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .vision-card img {
@@ -30,30 +30,30 @@
 }
 
 .vision-card h2 {
-  font-size: 1.15rem;
+  font-size: 1.02rem;
 }
 
 .vision-card p:last-child {
-  margin: 5px 0 0;
+  margin: 4px 0 0;
   color: var(--muted);
-  font-size: 0.86rem;
+  font-size: 0.8rem;
   font-weight: 620;
-  line-height: 1.38;
+  line-height: 1.36;
 }
 
 .panel {
-  padding: 14px;
+  padding: 11px 12px;
 }
 
 .panel-heading {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   align-items: end;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .panel-heading h2 {
-  font-size: 1.13rem;
+  font-size: 1rem;
   line-height: 1;
 }

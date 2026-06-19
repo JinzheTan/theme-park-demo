@@ -3,6 +3,7 @@
 @import "./base.css";
 
 @import "./components/glass.css";
+@import "./components/liquid-glass.css";
 @import "./components/pill.css";
 
 @import "./layout/app-shell.css";

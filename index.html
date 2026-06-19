@@ -8,6 +8,29 @@
     <link rel="stylesheet" href="./styles/index.css" />
   </head>
   <body>
+    <!-- Liquid Glass refraction filters. Used as backdrop-filter on floating
+         glass surfaces (Chromium only; other browsers fall back to blur via the
+         .lg-on class gate set in main.js). feTurbulence drives a gentle organic
+         displacement so the world behind the glass bends like real glass. -->
+    <svg class="lg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs>
+        <filter id="liquid-glass" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.014" numOctaves="2" seed="14" result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="2.2" result="softNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="18" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+          <feGaussianBlur in="refracted" stdDeviation="3.2" result="frosted" />
+          <feColorMatrix in="frosted" type="saturate" values="1.6" />
+        </filter>
+        <filter id="liquid-glass-strong" x="-14%" y="-14%" width="128%" height="128%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.01 0.012" numOctaves="2" seed="9" result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="2.4" result="softNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="26" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+          <feGaussianBlur in="refracted" stdDeviation="4.5" result="frosted" />
+          <feColorMatrix in="frosted" type="saturate" values="1.6" />
+        </filter>
+      </defs>
+    </svg>
+
     <div class="app-shell">
       <header class="topbar">
         <div>

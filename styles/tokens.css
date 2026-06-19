@@ -23,36 +23,38 @@
 
   /* Depth 1 — lightweight floating overlays (hover-card, floating-tool, minimap, action-bar, controls). */
   --glass-1-bg:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.20)),
-    rgba(255, 255, 255, 0.28);
-  --glass-1-border: rgba(255, 255, 255, 0.62);
+    linear-gradient(150deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08)),
+    rgba(255, 255, 255, 0.10);
+  --glass-1-border: rgba(255, 255, 255, 0.55);
   --glass-1-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    inset 0 7px 14px -9px rgba(255, 255, 255, 0.5),
-    0 14px 28px rgba(28, 83, 94, 0.16);
-  --glass-1-blur: blur(20px) saturate(1.3);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 8px 16px -10px rgba(255, 255, 255, 0.45),
+    inset 0 -6px 14px -8px rgba(28, 83, 94, 0.18),
+    0 10px 26px rgba(28, 83, 94, 0.16);
+  --glass-1-blur: blur(14px) saturate(1.7) brightness(1.06);
 
   /* Depth 2 — standard panels (sidebar panel, tool button, list cards, metric pills). */
   --glass-2-bg:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.22)),
-    rgba(255, 255, 255, 0.34);
-  --glass-2-border: rgba(255, 255, 255, 0.70);
+    linear-gradient(150deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1)),
+    rgba(255, 255, 255, 0.14);
+  --glass-2-border: rgba(255, 255, 255, 0.6);
   --glass-2-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.92),
-    inset 0 8px 16px -10px rgba(255, 255, 255, 0.55),
-    0 22px 50px rgba(28, 83, 94, 0.22);
-  --glass-2-blur: blur(24px) saturate(1.35);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 9px 18px -11px rgba(255, 255, 255, 0.5),
+    inset 0 -7px 16px -9px rgba(28, 83, 94, 0.2),
+    0 16px 40px rgba(28, 83, 94, 0.2);
+  --glass-2-blur: blur(18px) saturate(1.7) brightness(1.05);
 
   /* Depth 3 — hero containers (viewport, vision-card). */
   --glass-3-bg:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.46), rgba(255, 255, 255, 0.12)),
-    rgba(255, 255, 255, 0.25);
-  --glass-3-border: rgba(255, 255, 255, 0.78);
+    linear-gradient(155deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06)),
+    rgba(255, 255, 255, 0.08);
+  --glass-3-border: rgba(255, 255, 255, 0.66);
   --glass-3-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 10px 20px -12px rgba(255, 255, 255, 0.55),
-    0 32px 70px rgba(28, 83, 94, 0.26);
-  --glass-3-blur: blur(28px) saturate(1.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 11px 22px -13px rgba(255, 255, 255, 0.5),
+    0 26px 60px rgba(28, 83, 94, 0.24);
+  --glass-3-blur: blur(22px) saturate(1.7) brightness(1.04);
 
   /* Single accent (active) state. Applied additively as .glass--active. */
   --accent-border: rgba(216, 157, 38, 0.55);
@@ -61,15 +63,15 @@
   --accent-glow: 0 12px 22px rgba(216, 157, 38, 0.18);
 
   /* Pill chassis (used by metric pills, action buttons, speed toggles). */
-  --pill-height: 36px;
+  --pill-height: 30px;
   --pill-radius: 999px;
-  --pill-padding-x: 14px;
+  --pill-padding-x: 12px;
 
-  /* Component radii */
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
-  --radius-sm: 12px;
+  /* Component radii — kept tight for a small, refined liquid-glass feel. */
+  --radius-xl: 22px;
+  --radius-lg: 16px;
+  --radius-md: 13px;
+  --radius-sm: 10px;
 
   /* Z-stack contract — one deterministic layer per overlay role so glass never
      occludes glass ambiguously. Bottom → top:
