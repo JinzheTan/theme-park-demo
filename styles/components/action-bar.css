@@ -21,6 +21,26 @@
   background: rgba(255, 255, 255, 0.26);
 }
 
+.build-controls {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--pill-radius);
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.build-controls .pill {
+  min-width: 36px;
+  padding: 0 10px;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.build-controls .pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 .controls-launcher {
   position: absolute;
   top: 18px;

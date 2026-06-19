@@ -1,7 +1,10 @@
 import { state } from "./core/state.js";
 import { createGrid, seedPark } from "./sim/park.js";
 import { computeParkMetrics } from "./sim/economy.js";
+import { primeUnlocks } from "./sim/objectives.js";
 import { addEvent } from "./sim/events.js";
+import { hasAutoSave, restoreAutoSave } from "./core/save-game.js";
+import { unlockAudio } from "./core/audio.js";
 import { loadAssets } from "./data/assets.js";
 import { dom, ctx2d, minimapCtx2d } from "./ui/dom.js";
 import { updateViewportResponsiveState, fitCameraToPark } from "./render/camera.js";
@@ -12,6 +15,12 @@ import { bindSpeedControls } from "./ui/speed-controls.js";
 import { initControlsPopover } from "./ui/controls-popover.js";
 import { initMobileTabs } from "./ui/mobile-tabs.js";
 import { bindSettingsPanel, applySettingsToDocument } from "./ui/settings-panel.js";
+import { bindGuestInspector } from "./ui/guest-inspector.js";
+import { bindBuildControls } from "./ui/build-controls.js";
+import { bindStaffPanel } from "./ui/staff-panel.js";
+import { bindFinancePanel } from "./ui/finance-panel.js";
+import { bindEventsPanel } from "./ui/events-panel.js";
+import { maybeStartTutorial } from "./ui/tutorial.js";
 import { bindKeyboard } from "./input/keyboard.js";
 import { bindPointer } from "./input/pointer.js";
 import { bindWheel } from "./input/wheel.js";
@@ -19,18 +28,48 @@ import { bindMinimap } from "./input/minimap-input.js";
 import { startGameLoop } from "./loop/game-loop.js";
 import { installQaHooks } from "./core/qa-hooks.js";
 
+// Liquid Glass edge refraction relies on an SVG filter used as a
+// backdrop-filter, which only Chromium renders. Gate it behind `lg-on` so
+// Safari/Firefox keep a clean blurred-glass fallback instead of a broken layer.
+function enableLiquidGlass() {
+  try {
+    const ua = navigator.userAgent;
+    const isSafari = /Safari/.test(ua) && !/Chrome|Chromium|Edg|OPR|Brave/.test(ua);
+    const supported =
+      window.CSS && typeof CSS.supports === "function" &&
+      CSS.supports("backdrop-filter", "url(#x)") && !isSafari;
+    if (supported) document.documentElement.classList.add("lg-on");
+  } catch {
+    // Keep the blur fallback.
+  }
+}
+
 async function bootstrap() {
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   window.scrollTo(0, 0);
+  enableLiquidGlass();
 
   createGrid(state);
   seedPark(state);
+
+  // Pick up where the player left off: a silent autosave is restored on boot so
+  // an accidental refresh never wipes the park. Falls back to the starter park.
+  let restoredFromAutoSave = false;
+  if (state.settings.autoSave !== false && hasAutoSave()) {
+    restoredFromAutoSave = restoreAutoSave(state);
+  }
+
   await loadAssets(state);
 
   bindToolsPanel(state);
   bindSpeedControls(state);
   applySettingsToDocument(state);
   bindSettingsPanel(state);
+  bindGuestInspector(state);
+  bindBuildControls(state);
+  bindStaffPanel(state);
+  bindFinancePanel(state);
+  bindEventsPanel(state);
   initControlsPopover();
   initMobileTabs();
 
@@ -48,12 +87,30 @@ async function bootstrap() {
   window.addEventListener("resize", resize);
   if (window.visualViewport) window.visualViewport.addEventListener("resize", resize);
 
+  // Resume the audio context on the first real interaction (browsers block
+  // audio until a user gesture). One-shot, then removed.
+  const unlock = () => {
+    unlockAudio();
+    window.removeEventListener("pointerdown", unlock);
+    window.removeEventListener("keydown", unlock);
+  };
+  window.addEventListener("pointerdown", unlock);
+  window.addEventListener("keydown", unlock);
+
   updateViewportResponsiveState(state);
   resize();
   computeParkMetrics(state);
+  primeUnlocks(state);
   renderPanels(state);
-  addEvent(state, "Park open", "Wonderloop Park is ready for new paths, rides, and scenic upgrades.");
-  addEvent(state, "Starter layout", "The opening plaza includes a carousel, food, and care coverage.");
+  if (restoredFromAutoSave) {
+    addEvent(state, "Welcome back", `Your park resumed at week ${state.day} with $${Math.round(state.money)} on hand.`);
+  } else {
+    addEvent(state, "Park open", "Wonderloop Park is ready for new paths, rides, and scenic upgrades.");
+    addEvent(state, "Starter layout", "The opening plaza includes a carousel, food, and care coverage.");
+  }
+
+  // First-run coach: only for a genuinely fresh park, never on a restored one.
+  maybeStartTutorial(state, { restored: restoredFromAutoSave });
 
   const advanceTime = startGameLoop(state, dom.canvas, ctx2d, dom.minimapCanvas, minimapCtx2d);
   installQaHooks(state, dom.canvas, advanceTime);

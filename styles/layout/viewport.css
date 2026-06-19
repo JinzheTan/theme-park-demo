@@ -4,7 +4,7 @@
   height: 100%;
   overflow: hidden;
   isolation: isolate;
-  border-radius: 32px;
+  border-radius: 24px;
 }
 
 .viewport-panel::before {
@@ -23,7 +23,7 @@
   position: absolute;
   inset: 1px;
   pointer-events: none;
-  border-radius: 31px;
+  border-radius: 23px;
   background:
     radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.32), transparent 22%),
     radial-gradient(circle at 70% 80%, rgba(255, 218, 150, 0.18), transparent 32%);

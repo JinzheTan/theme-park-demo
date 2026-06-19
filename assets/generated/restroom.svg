@@ -1,0 +1,21 @@
+<svg width="210" height="210" viewBox="0 0 210 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="106" cy="190" rx="58" ry="17" fill="#132B31" fill-opacity=".24"/>
+  <!-- building body -->
+  <path d="M52 92h108v94H52V92Z" fill="#FFF6DE"/>
+  <path d="M106 92h54v94h-54V92Z" fill="#F4EBC9" fill-opacity=".7"/>
+  <!-- roof -->
+  <path d="M40 96 106 54l66 42v8H40v-8Z" fill="#3DAEC6"/>
+  <path d="M40 96 106 54l66 42H40Z" fill="#5CC0D4" fill-opacity=".55"/>
+  <!-- sign board -->
+  <rect x="74" y="100" width="62" height="26" rx="6" fill="#36BCA9"/>
+  <!-- two figures (W / M) -->
+  <circle cx="92" cy="108" r="4.5" fill="#FFF6DE"/>
+  <path d="M85 126c0-6 3-10 7-10s7 4 7 10h-14Z" fill="#FFF6DE"/>
+  <circle cx="118" cy="108" r="4.5" fill="#FFF6DE"/>
+  <rect x="113.5" y="113" width="9" height="13" rx="2" fill="#FFF6DE"/>
+  <!-- doors -->
+  <rect x="64" y="140" width="32" height="46" rx="4" fill="#8AC7D7"/>
+  <rect x="116" y="140" width="32" height="46" rx="4" fill="#8AC7D7"/>
+  <circle cx="90" cy="164" r="3" fill="#F3D089"/>
+  <circle cx="122" cy="164" r="3" fill="#F3D089"/>
+</svg>

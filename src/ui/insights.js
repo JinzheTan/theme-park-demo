@@ -1,6 +1,8 @@
 import { GROWTH_MILESTONES, growthLabel } from "../data/growth.js";
+import { OBJECTIVES } from "../data/objectives.js";
 import { SIM } from "../data/tuning.js";
 import { isObjectOperational } from "../sim/park.js";
+import { starString } from "../sim/rating.js";
 
 function operationalObjects(state) {
   return [...state.objects.values()].filter(
@@ -85,6 +87,16 @@ export function getGoalItems(state) {
 
   const items = [];
 
+  const rating = state.parkRating ?? 0;
+  items.push({
+    key: "rating",
+    label: "Park rating",
+    chip: `${rating.toFixed(1)}★`,
+    tone: "good",
+    detail: `${starString(rating)} — blended from happiness, cleanliness, variety, and growth.`,
+    current: true,
+  });
+
   if (nextMilestone) {
     items.push({
       key: "next-tier",
@@ -121,6 +133,21 @@ export function getGoalItems(state) {
     detail: "Positive weekly cashflow lets you expand without stalling out on upkeep.",
   });
 
+  // Campaign objectives — show the next few unfinished goals, then the rest.
+  const completed = state.completedObjectives ?? new Set();
+  const ordered = [...OBJECTIVES].sort((a, b) => Number(completed.has(a.id)) - Number(completed.has(b.id)));
+  for (const objective of ordered) {
+    const done = completed.has(objective.id);
+    items.push({
+      key: `obj-${objective.id}`,
+      label: objective.label,
+      chip: done ? "✓ Done" : `+$${objective.reward}`,
+      tone: done ? "good" : "warn",
+      detail: objective.detail,
+      current: false,
+    });
+  }
+
   return items;
 }
 
@@ -135,12 +162,26 @@ export function buildInsights(state) {
   );
   const insights = [];
 
-  if (state.money < 250) {
+  if (state.money < 0) {
+    insights.push({
+      key: "in-the-red",
+      tone: "warn",
+      title: "Cash is in the red",
+      detail: "Raise ticket prices, take a loan, or trim staff before an emergency bailout kicks in.",
+    });
+  } else if (state.money < 250) {
     insights.push({
       key: "low-cash",
       tone: "warn",
       title: "Cash is running thin",
       detail: "Slow expansion for a moment or add another revenue attraction before upkeep bites.",
+    });
+  } else if ((state.debt ?? 0) > 0) {
+    insights.push({
+      key: "debt",
+      tone: "warn",
+      title: `Carrying $${Math.round(state.debt)} of debt`,
+      detail: "Interest compounds weekly — repay from the Finance tab once cash is comfortable.",
     });
   }
 
@@ -151,6 +192,23 @@ export function buildInsights(state) {
       title: "Cleanliness is slipping",
       detail: "Add a care hub near the busiest branch or reduce guest density with alternate routes.",
     });
+  }
+
+  // Surface the single most pressing unmet guest need so the player knows which
+  // amenity to build next.
+  if (state.guests.length >= 5) {
+    const avg = (key, fallback = 0) =>
+      state.guests.reduce((sum, g) => sum + (g[key] ?? fallback), 0) / state.guests.length;
+    const needSignals = [
+      { key: "relief", value: avg("relief"), threshold: 74, title: "Guests need restrooms", detail: "Relief is running high — add a Restroom so guests stay comfortable." },
+      { key: "thirst", value: avg("thirst"), threshold: 72, title: "Guests are thirsty", detail: "Add a Drink Kiosk near the busy paths to quench thirst." },
+      { key: "hunger", value: avg("hunger"), threshold: 74, title: "Guests are hungry", detail: "Open another Food Stall so queues for food stay short." },
+      { key: "tired", value: 100 - avg("energy", 100), threshold: 74, title: "Guests are worn out", detail: "Place Benches so tired guests can rest and stay longer." },
+    ];
+    const pressing = needSignals.filter((n) => n.value >= n.threshold).sort((a, b) => b.value - a.value)[0];
+    if (pressing) {
+      insights.push({ key: `need-${pressing.key}`, tone: "warn", title: pressing.title, detail: pressing.detail });
+    }
   }
 
   if (crowded.length) {

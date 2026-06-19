@@ -1,0 +1,32 @@
+/* Liquid Glass — edge-refraction layer.
+ *
+ * The SVG filters in index.html do blur + organic displacement + saturate, so
+ * the world behind a glass surface bends and brightens like real glass. Only
+ * applied when `html.lg-on` is set (Chromium, gated in main.js); every other
+ * browser keeps the plain blurred-glass look from glass.css.
+ *
+ * Scoped to the floating chrome over the canvas + headline pills (few elements)
+ * to keep it crisp and performant — not the dozens of inner list cards. */
+
+.lg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html.lg-on .glass--depth-1,
+html.lg-on .metric-pill,
+html.lg-on .guest-inspector,
+html.lg-on .toast,
+html.lg-on .tutorial-card {
+  backdrop-filter: url(#liquid-glass);
+  -webkit-backdrop-filter: url(#liquid-glass);
+}
+
+html.lg-on .panel,
+html.lg-on .vision-card {
+  backdrop-filter: url(#liquid-glass-strong);
+  -webkit-backdrop-filter: url(#liquid-glass-strong);
+}

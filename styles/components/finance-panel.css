@@ -1,0 +1,104 @@
+/* Finance desk — pricing sliders, entry fee, and loans. */
+
+.finance-panel {
+  display: grid;
+  gap: 11px;
+}
+
+.finance-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.finance-stat {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.finance-stat span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 720;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.finance-stat strong {
+  color: var(--ink-strong);
+  font-size: 1.1rem;
+  font-weight: 850;
+}
+
+.finance-stat strong.warn {
+  color: var(--danger);
+}
+
+.finance-row {
+  display: grid;
+  gap: 6px;
+}
+
+.finance-row__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.finance-row__head strong {
+  color: var(--ink-strong);
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+.finance-row__value {
+  color: var(--gold-ink);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.finance-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--mint);
+}
+
+.finance-loans {
+  display: grid;
+  gap: 7px;
+}
+
+.finance-loans__heading {
+  margin: 0;
+}
+
+.finance-loans__row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.finance-loans__row:last-child {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.finance-loans__row .pill {
+  width: 100%;
+  min-width: 0;
+  padding: 0 8px;
+  font-size: 0.78rem;
+}
+
+.finance-loans__row .pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+body.theme-dark .finance-stat {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}

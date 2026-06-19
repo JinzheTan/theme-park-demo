@@ -12,6 +12,10 @@ export const ASSET_PATHS = {
   food: "./assets/generated/food-stall.png",
   service: "./assets/generated/service-hub.png",
   gate: "./assets/generated/gate.png",
+  drink: "./assets/generated/drink-stall.svg",
+  restroom: "./assets/generated/restroom.svg",
+  bench: "./assets/generated/bench.svg",
+  bin: "./assets/generated/bin.svg",
 };
 
 export const METRIC_ICON_PATHS = {

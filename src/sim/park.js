@@ -4,6 +4,7 @@ import { markUiDirty } from "../core/state.js";
 import { tileKey, inBounds, getTile, neighbors4 } from "../util/grid.js";
 import { rand } from "../util/math.js";
 import { addEvent } from "./events.js";
+import { initOwnedPlots } from "./land.js";
 import { ECONOMY } from "../data/tuning.js";
 
 export function isObjectOperational(state, object) {
@@ -103,6 +104,7 @@ export function createGrid(state) {
   }
 
   state.orderedTiles = state.tiles.flat().sort((a, b) => a.x + a.y - (b.x + b.y));
+  initOwnedPlots(state);
   updateActiveTileBounds(state);
 }
 
@@ -191,6 +193,9 @@ export function addObject(state, type, x, y, options = {}) {
     removable: def.removable !== false && !options.locked,
     stats: { ...def },
     sparkle: rand(0, Math.PI * 2),
+    condition: def.category === "ride" ? 100 : null,
+    broken: false,
+    downtime: 0,
   };
 
   tile.objectId = object.id;
@@ -245,6 +250,9 @@ export function seedPark(state) {
 
   addObject(state, "carousel", 10, 19, { free: true });
   addObject(state, "food", 17, 19, { free: true });
+  addObject(state, "drink", 18, 19, { free: true });
+  addObject(state, "bench", 13, 18, { free: true });
+  addObject(state, "bin", 15, 18, { free: true });
   addObject(state, "service", 17, 22, { free: true });
   addObject(state, "fountain", 11, 22, { free: true });
   addObject(state, "tree", 9, 17, { free: true });

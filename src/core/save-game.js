@@ -1,11 +1,14 @@
 import { OBJECT_DEFS } from "../data/objects.js";
 import { createState, markUiDirty } from "./state.js";
 import { createGrid, refreshParkGraph, seedPark } from "../sim/park.js";
+import { initOwnedPlots } from "../sim/land.js";
 import { computeParkMetrics } from "../sim/economy.js";
 import { addEvent } from "../sim/events.js";
 
 const SAVE_KEY = "wonderloop-park-save-v1";
+const AUTOSAVE_KEY = "wonderloop-park-autosave-v1";
 const SAVE_VERSION = 1;
+const AUTOSAVE_INTERVAL_S = 18;
 
 const STATE_KEYS = [
   "money",
@@ -20,10 +23,24 @@ const STATE_KEYS = [
   "totalRevenue",
   "totalUpkeep",
   "weeklyProfit",
+  "weekRevenueMark",
+  "weekUpkeepMark",
+  "priceMultiplier",
+  "entryFee",
+  "debt",
+  "bailoutCount",
   "averageHappiness",
   "cleanliness",
+  "timeOfDay",
+  "weather",
+  "weatherTimer",
+  "season",
+  "showsLaunched",
+  "placedByPlayer",
+  "peakGuests",
   "nextObjectId",
   "nextGuestId",
+  "nextStaffId",
   "nextEventId",
   "camera",
   "cameraTouched",
@@ -64,6 +81,10 @@ function cloneObject(object) {
     locked: object.locked,
     removable: object.removable,
     sparkle: object.sparkle,
+    condition: object.condition,
+    broken: object.broken,
+    downtime: object.downtime,
+    ticketPrice: object.ticketPrice,
   };
 }
 
@@ -87,6 +108,10 @@ function restoreObject(data) {
     removable: Boolean(data.removable),
     stats: { ...def },
     sparkle: Number(data.sparkle) || 0,
+    condition: data.condition == null ? (def.category === "ride" ? 100 : null) : Number(data.condition),
+    broken: Boolean(data.broken),
+    downtime: Number(data.downtime) || 0,
+    ticketPrice: data.ticketPrice == null ? null : Number(data.ticketPrice),
   };
 }
 
@@ -118,8 +143,16 @@ function applyPlainState(state, plain) {
     if (object) state.objects.set(object.id, object);
   }
   state.guests = Array.isArray(plain.guests) ? plain.guests.map((guest) => ({ ...guest })) : [];
+  state.staff = Array.isArray(plain.staff) ? plain.staff.map((worker) => ({ ...worker, route: [] })) : [];
   state.feed = Array.isArray(plain.feed) ? plain.feed.map((entry) => ({ ...entry })) : [];
   state.claimedMilestones = new Set(plain.claimedMilestones ?? []);
+  state.completedObjectives = new Set(plain.completedObjectives ?? []);
+  state.announcedUnlocks = new Set(plain.announcedUnlocks ?? []);
+  if (Array.isArray(plain.ownedPlots) && plain.ownedPlots.length) {
+    state.ownedPlots = new Set(plain.ownedPlots);
+  } else {
+    initOwnedPlots(state);
+  }
   refreshParkGraph(state);
   computeParkMetrics(state);
   markUiDirty();
@@ -148,8 +181,12 @@ export function serializePark(state) {
     tiles: state.tiles.map((row) => row.map(cloneTile)),
     objects: [...state.objects.values()].map(cloneObject),
     guests: state.guests.map((guest) => ({ ...guest })),
+    staff: state.staff.map((worker) => ({ ...worker, route: [] })),
     feed: state.feed.map((entry) => ({ ...entry })),
     claimedMilestones: [...state.claimedMilestones],
+    completedObjectives: [...state.completedObjectives],
+    announcedUnlocks: [...state.announcedUnlocks],
+    ownedPlots: [...state.ownedPlots],
   };
 
   for (const key of STATE_KEYS) {
@@ -178,6 +215,7 @@ export function loadPark(state) {
   if (save.version !== SAVE_VERSION || !save.state) return null;
   applyPlainState(state, save.state);
   addEvent(state, "Park loaded", "Saved park state restored from this browser.");
+  if (state.settings?.autoSave !== false) writeAutoSave(state);
   return getSaveMeta();
 }
 
@@ -190,10 +228,60 @@ export function resetPark(state) {
   seedPark(state);
   computeParkMetrics(state);
   addEvent(state, "Fresh start", "Park reset to the starter layout.");
+  if (state.settings?.autoSave !== false) writeAutoSave(state);
   markUiDirty();
 }
 
 export function clearSavedPark() {
   window.localStorage.removeItem(SAVE_KEY);
   return null;
+}
+
+// --- Autosave -------------------------------------------------------------
+// A silent, separate slot so the park survives an accidental refresh without
+// the player ever pressing Save. Independent from the manual save slot above.
+
+export function hasAutoSave() {
+  try {
+    const raw = window.localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return false;
+    const save = JSON.parse(raw);
+    return save.version === SAVE_VERSION && Boolean(save.state);
+  } catch {
+    return false;
+  }
+}
+
+export function writeAutoSave(state) {
+  try {
+    window.localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(serializePark(state)));
+  } catch {
+    // Storage may be full or blocked; the live session is unaffected.
+  }
+}
+
+// Wall-clock cadence so progress is captured even while the sim is paused.
+export function autoSaveTick(state, realDeltaSeconds) {
+  if (state.settings?.autoSave === false) return;
+  state.autoSaveClock += realDeltaSeconds;
+  if (state.autoSaveClock < AUTOSAVE_INTERVAL_S) return;
+  state.autoSaveClock = 0;
+  writeAutoSave(state);
+}
+
+export function restoreAutoSave(state) {
+  try {
+    const raw = window.localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return false;
+    const save = JSON.parse(raw);
+    if (save.version !== SAVE_VERSION || !save.state) return false;
+    applyPlainState(state, save.state);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearAutoSave() {
+  window.localStorage.removeItem(AUTOSAVE_KEY);
 }

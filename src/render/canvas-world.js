@@ -4,6 +4,9 @@ import { clamp } from "../util/math.js";
 import { tileKey, inBounds } from "../util/grid.js";
 import { tileToScreen } from "../util/iso.js";
 import { canPlaceTool } from "../sim/placement.js";
+import { getAtmosphereModifiers } from "../sim/atmosphere.js";
+import { isTileOwned, isPlotBuyable, plotForTile } from "../sim/land.js";
+import { STAFF_TYPES } from "../data/staff.js";
 
 function drawAsset(state, ctx, image, screenX, screenY, width, height, anchorY, options = {}) {
   if (!image) return;
@@ -122,6 +125,23 @@ function drawTile(state, ctx, tile) {
   }
 }
 
+// Drawn as its own pass after every ground tile is painted, so neighbouring
+// grass images (which overlap a little in iso) can't paint over the shading.
+// Unowned land reads as off-limits; with the Buy Land tool active, plots you
+// can purchase glow gold instead.
+function drawLandOverlay(state, ctx) {
+  const landTool = state.selectedTool === "land";
+  for (const tile of state.orderedTiles) {
+    if (isTileOwned(state, tile.x, tile.y)) continue;
+    const { px, py } = plotForTile(tile.x, tile.y);
+    if (landTool && isPlotBuyable(state, px, py)) {
+      drawDiamondFill(state, ctx, tile.x, tile.y, "#f3d089", 0.34);
+    } else {
+      drawDiamondFill(state, ctx, tile.x, tile.y, "#0a1c26", 0.6);
+    }
+  }
+}
+
 function drawObject(state, ctx, object) {
   const def = object.stats;
   const screen = tileToScreen(state, object.x, object.y);
@@ -155,12 +175,13 @@ function drawObject(state, ctx, object) {
     ctx.save();
     ctx.font = `${11 * state.camera.zoom + 6}px "Trebuchet MS", sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillStyle = "#f9f3dc";
-    ctx.fillText(
-      object.riders.length ? "Running" : `Q ${object.queue.length}`,
-      screen.x,
-      labelY,
-    );
+    if (object.broken) {
+      ctx.fillStyle = "#ff8a7a";
+      ctx.fillText("⚠ Closed", screen.x, labelY);
+    } else {
+      ctx.fillStyle = "#f9f3dc";
+      ctx.fillText(object.riders.length ? "Running" : `Q ${object.queue.length}`, screen.x, labelY);
+    }
     ctx.restore();
   }
 }
@@ -174,6 +195,48 @@ function queuePosition(object, index) {
     x: entry.x + dx * index * 0.42 + dy * lateral,
     y: entry.y + dy * index * 0.42 - dx * lateral,
   };
+}
+
+function drawThoughtBubble(state, ctx, centerX, bottomY, thought) {
+  const zoom = state.camera.zoom;
+  const fontSize = Math.round(11 * zoom + 4);
+  ctx.save();
+  ctx.font = `${fontSize}px "Trebuchet MS", sans-serif`;
+  const label = `${thought.icon} ${thought.text}`;
+  const textWidth = ctx.measureText(label).width;
+  const padX = 8 * zoom + 4;
+  const padY = 5 * zoom + 3;
+  const w = textWidth + padX * 2;
+  const h = fontSize + padY * 2;
+  const x = centerX - w / 2;
+  const y = bottomY - h;
+  const r = 8 * zoom + 3;
+
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+  // Little tail pointing down to the guest.
+  ctx.moveTo(centerX - 5 * zoom, y + h);
+  ctx.lineTo(centerX, y + h + 7 * zoom);
+  ctx.lineTo(centerX + 5 * zoom, y + h);
+  ctx.closePath();
+
+  ctx.fillStyle = "rgba(255, 252, 244, 0.96)";
+  ctx.shadowColor = "rgba(23, 53, 61, 0.28)";
+  ctx.shadowBlur = 10 * zoom;
+  ctx.shadowOffsetY = 3 * zoom;
+  ctx.fill();
+
+  ctx.shadowColor = "transparent";
+  ctx.fillStyle = "#1d3a43";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(label, centerX, y + h / 2 + 1);
+  ctx.restore();
 }
 
 function drawGuest(state, ctx, guest) {
@@ -193,8 +256,17 @@ function drawGuest(state, ctx, guest) {
   const screen = tileToScreen(state, drawX, drawY);
   const baseY = screen.y + TILE_HEIGHT * 0.62 * state.camera.zoom;
   const size = 10 * state.camera.zoom + 2;
+  const selected = guest.id === state.selectedGuestId;
 
   ctx.save();
+  if (selected) {
+    const pulse = state.settings?.reducedMotion ? 1 : 1 + Math.sin(state.dayClock * 5) * 0.12;
+    ctx.strokeStyle = "rgba(216, 157, 38, 0.95)";
+    ctx.lineWidth = 2.5 * state.camera.zoom;
+    ctx.beginPath();
+    ctx.ellipse(screen.x, baseY + 6, size * 1.4 * pulse, size * 0.7 * pulse, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
   ctx.beginPath();
   ctx.ellipse(screen.x, baseY + 6, size * 0.95, size * 0.42, 0, 0, Math.PI * 2);
@@ -210,6 +282,134 @@ function drawGuest(state, ctx, guest) {
   ctx.fillStyle = guest.color;
   ctx.fillRect(screen.x - size * 0.52, baseY - size * 1.12, size * 1.04, size * 1.02);
   ctx.restore();
+
+  if (guest.thought && state.camera.zoom > 0.55) {
+    drawThoughtBubble(state, ctx, screen.x, baseY - size * 3.1, guest.thought);
+  }
+}
+
+// Full-screen wash that sells time-of-day + weather without touching any of
+// the sprite art. Night dims toward blue, dusk warms, rain cools and streaks.
+function drawAtmosphere(state, ctx, canvas) {
+  const atmosphere = getAtmosphereModifiers(state);
+  if (!atmosphere.active) return;
+  const width = canvas.clientWidth;
+  const height = canvas.clientHeight;
+
+  if (atmosphere.phase.overlay) {
+    ctx.save();
+    ctx.fillStyle = atmosphere.phase.overlay;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  if (atmosphere.weather.tint) {
+    ctx.save();
+    ctx.fillStyle = atmosphere.weather.tint;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  if (atmosphere.season?.tint) {
+    ctx.save();
+    ctx.fillStyle = atmosphere.season.tint;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+  }
+
+  if (atmosphere.weather.id === "rain") {
+    const reduced = Boolean(state.settings?.reducedMotion);
+    const drift = reduced ? 0 : (state.timeOfDay * 4200) % 60;
+    ctx.save();
+    ctx.strokeStyle = "rgba(214, 230, 245, 0.32)";
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 70; i += 1) {
+      const baseX = (i * 137.5) % width;
+      const baseY = (i * 89.3) % height;
+      const x = (baseX + drift * 0.6) % width;
+      const y = (baseY + drift * 2.4) % height;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x - 4, y + 14);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawStaff(state, ctx, worker) {
+  const def = STAFF_TYPES[worker.type];
+  if (!def) return;
+  const zoom = state.camera.zoom;
+  const screen = tileToScreen(state, worker.x, worker.y);
+  const baseY = screen.y + TILE_HEIGHT * 0.62 * zoom;
+  const size = 11 * zoom + 2;
+
+  ctx.save();
+  ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+  ctx.beginPath();
+  ctx.ellipse(screen.x, baseY + 6, size * 1.0, size * 0.44, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body in the staff colour, with a paler cap so they read as uniformed.
+  ctx.fillStyle = def.color;
+  ctx.fillRect(screen.x - size * 0.52, baseY - size * 1.12, size * 1.04, size * 1.05);
+  ctx.fillStyle = "#fdf6e6";
+  ctx.beginPath();
+  ctx.arc(screen.x, baseY - size * 1.85, size * 0.66, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = def.color;
+  ctx.fillRect(screen.x - size * 0.7, baseY - size * 2.2, size * 1.4, size * 0.42);
+  ctx.restore();
+
+  if (zoom > 0.55) {
+    ctx.save();
+    ctx.font = `${Math.round(11 * zoom + 3)}px "Trebuchet MS", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(def.icon, screen.x, baseY - size * 3.0);
+    ctx.restore();
+  }
+}
+
+function drawFireworks(state, ctx, canvas) {
+  if (!state.fireworks.length) return;
+  const cw = canvas.clientWidth;
+  const ch = canvas.clientHeight;
+  const reduced = Boolean(state.settings?.reducedMotion);
+  ctx.save();
+  for (const burst of state.fireworks) {
+    const t = burst.age / burst.life;
+    const cx = burst.nx * cw;
+    const cy = burst.ny * ch;
+    const radius = (reduced ? 0.5 : t) * 74 + 6;
+    const alpha = Math.max(0, 1 - t);
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = burst.color;
+    ctx.fillStyle = burst.color;
+    ctx.lineWidth = 2;
+    for (let i = 0; i < burst.sparks; i += 1) {
+      const angle = (i / burst.sparks) * Math.PI * 2;
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+      if (!reduced) {
+        ctx.beginPath();
+        ctx.moveTo(cx + Math.cos(angle) * radius * 0.5, cy + Math.sin(angle) * radius * 0.5);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(x, y, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    if (!reduced && t < 0.3) {
+      ctx.globalAlpha = alpha * (1 - t / 0.3);
+      ctx.fillStyle = "#fff8e0";
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  ctx.restore();
 }
 
 export function render(state, ctx, canvas) {
@@ -223,6 +423,7 @@ export function render(state, ctx, canvas) {
   for (const tile of state.orderedTiles) {
     drawTile(state, ctx, tile);
   }
+  drawLandOverlay(state, ctx);
 
   // Pass 2 — paint objects + guests in iso depth order so closer items sit on
   // top of further items, but everything sits on top of the ground.
@@ -233,15 +434,23 @@ export function render(state, ctx, canvas) {
   for (const guest of state.guests) {
     drawables.push({ depth: guest.x + guest.y, kind: "guest", payload: guest });
   }
+  for (const worker of state.staff) {
+    drawables.push({ depth: worker.x + worker.y, kind: "staff", payload: worker });
+  }
   drawables.sort((a, b) => a.depth - b.depth);
 
   for (const item of drawables) {
     if (item.kind === "object") drawObject(state, ctx, item.payload);
+    else if (item.kind === "staff") drawStaff(state, ctx, item.payload);
     else drawGuest(state, ctx, item.payload);
   }
 
+  drawAtmosphere(state, ctx, canvas);
+  drawFireworks(state, ctx, canvas);
+
   if (
     state.settings?.showBuildPreview !== false &&
+    state.selectedTool !== "inspect" &&
     state.pointer.tile &&
     inBounds(state.pointer.tile.x, state.pointer.tile.y)
   ) {

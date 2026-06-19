@@ -16,31 +16,39 @@
 @media (max-width: 760px) {
   body { overflow: auto; }
   .app-shell { padding: 12px; gap: 12px; }
-  .topbar h1 { font-size: 2.25rem; }
-  .headline-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .topbar h1 { font-size: 1.95rem; }
+  .headline-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
   .pill--metric {
-    min-height: 54px;
-    padding: 8px 10px;
+    min-height: 44px;
+    padding: 6px 9px;
+    gap: 7px;
   }
-  .pill--metric img { width: 31px; height: 31px; }
+  .pill--metric img { width: 24px; height: 24px; }
+  .pill--metric strong { font-size: 0.82rem; }
+  .pill--metric span { font-size: 0.62rem; }
 
-  .viewport-panel { min-height: 620px; border-radius: 26px; }
+  .viewport-panel { min-height: 620px; border-radius: 22px; }
 
+  /* Keep the action bar a single compact row so it never grows down into the
+     guest inspector below it; overlay-scale shrinks it on very small screens. */
   .action-bar {
-    right: 14px;
     left: 14px;
-    flex-wrap: wrap;
+    right: auto;
+    flex-wrap: nowrap;
+    max-width: calc(100% - 28px);
     border-radius: 22px;
   }
   .controls-launcher { top: 86px; right: 14px; }
 
+  /* Reserve the bottom-right corner for the minimap so the HUD cards and the
+     minimap sit side by side instead of overlapping. */
   .floating-tools {
     left: 14px;
-    right: 14px;
+    right: 172px;
     bottom: 14px;
     grid-template-columns: 1fr;
-    max-width: 250px;
+    max-width: none;
   }
   .floating-tool { padding: 9px 11px; }
 
@@ -59,7 +67,7 @@
 }
 
 @media (max-width: 520px) {
-  .headline-metrics { grid-template-columns: 1fr; }
+  .headline-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .minimap { width: 128px; height: 128px; }
-  .floating-tools { max-width: 210px; }
+  .floating-tools { right: 152px; }
 }

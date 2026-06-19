@@ -1,0 +1,61 @@
+/* Staff roster — hire/dismiss cards plus a running wage total. */
+
+.staff-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.staff-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 2px 2px;
+}
+
+.staff-summary__label {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 720;
+}
+
+.staff-summary strong {
+  color: var(--gold-ink);
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.staff-card strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.staff-card__icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.staff-card__count {
+  margin-left: auto;
+  color: var(--good);
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.staff-card__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.staff-card__actions .pill {
+  width: 100%;
+  min-width: 0;
+}
+
+.staff-card__actions .pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

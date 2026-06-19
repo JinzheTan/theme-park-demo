@@ -27,3 +27,53 @@ Next step progress:
 - Added an Ops mobile tab and exposed operations data in the QA text snapshot.
 - Added Park Data controls for local Save, Load, Clear, and New Park reset.
 - Exposed save/load/reset through QA hooks for repeatable verification.
+
+Session — gameplay depth + ship hardening:
+- Goal: make the build shippable and add features for necessity, retention, and fun.
+- Bug fixes: real weekly operating result (revenue − upkeep + dividend) instead of just the dividend; "1 ride" pluralization.
+- Auto-save & restore: silent autosave slot (18s wall-clock cadence) restored on boot ("Welcome back"), independent of the manual save slot; setting toggle. Park replacements (load/reset) refresh the autosave mirror.
+- Achievements: 14 account-level badges in `data/achievements.js`, evaluated each tick, persisted via `core/progress-store.js` (survive New Park), with a new Awards panel/tab, toast notifications (`ui/toast.js`), and a chime.
+- Day/night + weather: `data/atmosphere.js` + `sim/atmosphere.js`; `getAtmosphereModifiers` bends spawn/mood/appetite, drives a canvas tint + rain pass and a HUD pill; gated by a "Day & weather" setting.
+- Sound: `core/audio.js` synthesizes all SFX (place/remove/dispatch/milestone/achievement) via WebAudio, unlocked on first gesture, toggleable.
+- New settings section "Live World" (Day & weather, Sound, Autosave). Save schema extended (backward compatible, version unchanged).
+
+Verification:
+- `npm run lint:dead` passed (49 files reachable).
+- `npm run qa` passed: QA OK, no page errors, save/load + pause assertions green.
+- Browser-verified desktop + mobile: atmosphere pill, rain rendering, achievement toast/unlock, autosave restore, Awards tab — no console errors.
+
+Phase 1 — experience & guest life (D track):
+- Guest identity: names + party size (data/guest-flavor.js); serialized with guests.
+- Thought bubbles: contextual speech bubbles (ride loved, hungry, queue too long, scenery, leaving) rendered on canvas with cooldowns.
+- Inspect tool + guest inspector: click a guest to follow; floating card shows mood/hunger/patience meters, activity, thought; selection ring on canvas.
+- Trends dashboard: sim/stats.js ring-buffer sampler + ui/stats-panel.js sparklines (cash/guests/happiness/growth).
+- Undo/redo: sim/history.js snapshot stack (build-only slice), Ctrl+Z/Y + action-bar buttons; drag-stroke = one undo step.
+- Dark mode: token overrides in styles/components/theme-dark.css, settings toggle.
+- Interactive tutorial: ui/tutorial.js 5-step first-run coach with auto-advancing action steps; localStorage-gated; replayable from Settings.
+- Verified: lint:dead 56 files, npm run qa green, browser checks of every feature (incl. real click-to-inspect) with no console errors.
+
+Phase 2 — management depth (A track), in progress:
+- Guest needs v2: thirst, relief (bladder), energy added alongside hunger; stacking happiness penalties; needs-priority destination choice; need-satisfaction thoughts.
+- New facilities: Drink Kiosk (thirst), Restroom (relief), Park Bench (energy), Trash Bin (cuts nearby litter). Authored 4 palette-matched SVG sprites loaded via the existing Image loader. New "Comfort" tool group. Seeded a few into the starter park. Need-based insights guide what to build. New "Creature Comforts" achievement.
+- Staff system (src/data/staff.js + src/sim/staff.js): hire/dismiss Janitor/Mechanic/Entertainer/Security with up-front fee + per-cycle wages; staff walk the paths; janitor cleans litter, entertainer/security apply nearby auras, mechanic services/repairs rides. Staff panel + mobile tab + canvas rendering; staff persisted in saves.
+- Breakdowns & repair (src/sim/breakdown.js): rides wear with use, break down and stop, mechanics repair fast, external crew auto-recovers after a downtime window so no soft-lock. Ride condition shown in Ride Status + "⚠ Closed" canvas label; breakdown toast.
+- Pricing + loans/bankruptcy (src/sim/finance.js + src/ui/finance-panel.js): global ticket-price multiplier (0.6–1.6x) with demand elasticity (high prices damp ride demand) and a park entry fee (revenue per arrival, but dampens spawn). Loans (3 sizes) with weekly compounding interest; manual repay. Cushioned bankruptcy: cash below the floor for a grace window triggers an investor bailout (cash floated to a small positive, debt added, growth-score dinged) instead of game over. Finance panel + "Money" tab; cash/debt insights.
+- Phase 2 COMPLETE (tasks 14-18). Verified: lint:dead 62 files, npm run qa green (rides 5), browser checks: hiring all 4 staff, janitor cleaning, forced breakdown → mechanic repair, needs loop, loans, pricing, and the cushioned bailout firing, with no console errors.
+
+Phase 3 — living world & events (C track), COMPLETE:
+- Fireworks shows (src/sim/shows.js): launchable for cash, canvas particle bursts (drawFireworks), big happiness boost (bigger after dark), toast. Events panel.
+- Four seasons (data/atmosphere.js SEASONS + seasonForDay): rotate every 3 weeks, scale spawn (summer busy, winter quiet), add a faint canvas tint, surfaced in the atmosphere HUD pill (season + phase + weather) with a season-change event.
+- Marketing campaigns (shows.js): timed spend-to-boost-attendance, wired into the spawn rate; Events panel button with a live countdown.
+- Guest types (guest-flavor.js GUEST_KINDS): family/thrill/tourist/foodie with excitement and food biases that shape ride/food choice; shown in the inspector.
+- New achievements: Showstopper (3 fireworks), Four Seasons (reach winter). Events panel under the Money tab.
+- Verified: lint:dead 64 files, npm run qa green, browser checks: fireworks render + boost, season rotation to winter, marketing attendance bump (11→18), guest-kind distribution + inspector label, no console errors.
+
+Phase 4 — progression & content (B track), COMPLETE:
+- Star rating (sim/rating.js): a 0-5 score blended from happiness, cleanliness, variety, and growth; shown as ★ in the HUD growth pill and the Goals panel.
+- Objectives (data/objectives.js + sim/objectives.js): a per-park campaign checklist with cash rewards and toasts, listed in the Goals panel; persisted in saves.
+- Tech tree (data/unlocks.js): wheel/fountain/coaster start locked and open as guestsServed grows (or 4★ for the coaster); palette shows a 🔒 badge + requirement; unlock toast on opening. Enforced in canPlaceTool.
+- Land expansion (sim/land.js): the buildable park is a set of owned 7x7 plots; the rest is dimmed and off-limits. A "Buy Land" tool purchases adjacent plots at an escalating price; ownership persisted and enforced in placement. Dimming drawn in a dedicated overlay pass so neighbouring grass can't paint over it.
+- New achievements (Showstopper, Four Seasons) earlier; objectives culminate in a 5-star resort.
+- Verified: lint:dead 69 files, npm run qa green, browser checks: rating in HUD, objective auto-complete + reward, locked palette + unlock on progress, buy-land flow + ownership dimming, no console errors.
+
+ALL FOUR PHASES COMPLETE (D experience, A management depth, C living world, B progression).

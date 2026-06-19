@@ -8,6 +8,29 @@
     <link rel="stylesheet" href="./styles/index.css" />
   </head>
   <body>
+    <!-- Liquid Glass refraction filters. Used as backdrop-filter on floating
+         glass surfaces (Chromium only; other browsers fall back to blur via the
+         .lg-on class gate set in main.js). feTurbulence drives a gentle organic
+         displacement so the world behind the glass bends like real glass. -->
+    <svg class="lg-defs" aria-hidden="true" focusable="false" width="0" height="0">
+      <defs>
+        <filter id="liquid-glass" x="-12%" y="-12%" width="124%" height="124%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.012 0.014" numOctaves="2" seed="14" result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="2.2" result="softNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="18" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+          <feGaussianBlur in="refracted" stdDeviation="3.2" result="frosted" />
+          <feColorMatrix in="frosted" type="saturate" values="1.6" />
+        </filter>
+        <filter id="liquid-glass-strong" x="-14%" y="-14%" width="128%" height="128%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.01 0.012" numOctaves="2" seed="9" result="noise" />
+          <feGaussianBlur in="noise" stdDeviation="2.4" result="softNoise" />
+          <feDisplacementMap in="SourceGraphic" in2="softNoise" scale="26" xChannelSelector="R" yChannelSelector="G" result="refracted" />
+          <feGaussianBlur in="refracted" stdDeviation="4.5" result="frosted" />
+          <feColorMatrix in="frosted" type="saturate" values="1.6" />
+        </filter>
+      </defs>
+    </svg>
+
     <div class="app-shell">
       <header class="topbar">
         <div>
@@ -38,6 +61,10 @@
               <button class="pill pill--toggle" data-speed="0">Pause</button>
               <button class="pill pill--toggle active glass--active" data-speed="1">1x</button>
               <button class="pill pill--toggle" data-speed="2">2x</button>
+            </div>
+            <div class="pill-group build-controls" id="buildControls" aria-label="Undo and redo">
+              <button class="pill pill--toggle" id="undoButton" type="button" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+              <button class="pill pill--toggle" id="redoButton" type="button" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
             </div>
           </div>
 
@@ -70,6 +97,9 @@
 
           <div class="floating-tools" id="floatingTools"></div>
           <div class="hover-card glass glass--depth-1" id="hoverCard"></div>
+          <div class="guest-inspector glass glass--depth-2" id="guestInspector"></div>
+          <div class="tutorial-card glass glass--depth-3" id="tutorialCard" role="dialog" aria-label="Tutorial"></div>
+          <div class="toast-stack" id="toastStack" aria-live="polite"></div>
         </section>
 
         <aside class="sidebar" data-active-tab="tools">
@@ -114,6 +144,38 @@
             <div class="operations-panel" id="operationsPanel"></div>
           </section>
 
+          <section class="panel glass glass--depth-2" data-tab-panel="ops">
+            <div class="panel-heading">
+              <p class="eyebrow">Performance</p>
+              <h2>Trends</h2>
+            </div>
+            <div class="stats-panel" id="statsPanel"></div>
+          </section>
+
+          <section class="panel glass glass--depth-2" data-tab-panel="staff">
+            <div class="panel-heading">
+              <p class="eyebrow">Team Roster</p>
+              <h2>Staff</h2>
+            </div>
+            <div class="staff-panel" id="staffPanel"></div>
+          </section>
+
+          <section class="panel glass glass--depth-2" data-tab-panel="finance">
+            <div class="panel-heading">
+              <p class="eyebrow">Counting House</p>
+              <h2>Finance</h2>
+            </div>
+            <div class="finance-panel" id="financePanel"></div>
+          </section>
+
+          <section class="panel glass glass--depth-2" data-tab-panel="finance">
+            <div class="panel-heading">
+              <p class="eyebrow">Showtime</p>
+              <h2>Events</h2>
+            </div>
+            <div class="events-panel" id="eventsPanel"></div>
+          </section>
+
           <section class="panel glass glass--depth-2" data-tab-panel="activity">
             <div class="panel-heading">
               <p class="eyebrow">Guest Watch</p>
@@ -136,6 +198,17 @@
               <h2>Ride Status</h2>
             </div>
             <div class="ride-status-list" id="rideStatusList"></div>
+          </section>
+
+          <section class="panel glass glass--depth-2" data-tab-panel="awards">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Hall of Fame</p>
+                <h2>Achievements</h2>
+              </div>
+              <span class="awards-count" id="achievementsCount">0 / 0</span>
+            </div>
+            <div class="achievement-list" id="achievementsList"></div>
           </section>
 
           <section class="panel glass glass--depth-2" data-tab-panel="notes">

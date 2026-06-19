@@ -1,10 +1,12 @@
 import { DEFAULT_SETTINGS, normalizeSettings, saveSettings } from "../core/settings.js";
 import { markUiDirty } from "../core/state.js";
+import { setAudioEnabled } from "../core/audio.js";
 import { clearSavedPark, getSaveMeta, loadPark, resetPark, savePark } from "../core/save-game.js";
 import { dom } from "./dom.js";
 import { el, setClass, setText } from "./diff.js";
 import { setSimulationSpeed } from "./speed-controls.js";
 import { setSelectedTool } from "./tools-panel.js";
+import { startTutorial } from "./tutorial.js";
 
 const SETTING_SECTIONS = [
   {
@@ -24,8 +26,17 @@ const SETTING_SECTIONS = [
     ],
   },
   {
+    label: "Live World",
+    controls: [
+      { key: "dayNightCycle", type: "toggle", label: "Day & weather" },
+      { key: "sound", type: "toggle", label: "Sound effects" },
+      { key: "autoSave", type: "toggle", label: "Autosave" },
+    ],
+  },
+  {
     label: "Comfort",
     controls: [
+      { key: "darkMode", type: "toggle", label: "Dark mode" },
       { key: "reducedMotion", type: "toggle", label: "Reduced motion" },
       { key: "startPaused", type: "toggle", label: "Start paused" },
       { key: "uiScale", type: "range", label: "UI scale", min: 90, max: 110, step: 5 },
@@ -46,11 +57,13 @@ function applySettingClasses(settings) {
   document.body.classList.toggle("settings-hide-floating", !settings.showFloatingHud);
   document.body.classList.toggle("settings-hide-hover", !settings.showHoverCard);
   document.body.classList.toggle("settings-reduced-motion", settings.reducedMotion);
+  document.body.classList.toggle("theme-dark", settings.darkMode);
 }
 
 export function applySettingsToDocument(state) {
   state.settings = normalizeSettings(state.settings);
   applySettingClasses(state.settings);
+  setAudioEnabled(state.settings.sound);
 }
 
 function valueLabel(control, value) {
@@ -163,10 +176,15 @@ function mountSettingsPanel(state) {
   host.appendChild(dataSection);
 
   const footer = el("div", "settings-footer");
+  const replay = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
+  replay.type = "button";
+  replay.dataset.replayTutorial = "true";
+  setText(replay, "Replay Tutorial");
   const reset = el("button", "pill pill--action glass glass--depth-1 glass-hoverable");
   reset.type = "button";
   reset.dataset.settingsReset = "true";
   setText(reset, "Reset Settings");
+  footer.appendChild(replay);
   footer.appendChild(reset);
   host.appendChild(footer);
 
@@ -181,6 +199,7 @@ function setSetting(key, value) {
 
   stateRef.settings = normalizeSettings({ ...stateRef.settings, [key]: value });
   applySettingClasses(stateRef.settings);
+  if (key === "sound") setAudioEnabled(stateRef.settings.sound);
   saveSettings(stateRef.settings);
   renderSettingsControls(stateRef);
   markUiDirty();
@@ -233,11 +252,18 @@ function handleSettingsClick(event) {
     return;
   }
 
+  const replayTarget = event.target.closest("[data-replay-tutorial]");
+  if (replayTarget) {
+    startTutorial(stateRef);
+    return;
+  }
+
   const target = event.target.closest("[data-settings-reset]");
   if (!target) return;
 
   stateRef.settings = { ...DEFAULT_SETTINGS };
   applySettingClasses(stateRef.settings);
+  setAudioEnabled(stateRef.settings.sound);
   saveSettings(stateRef.settings);
   renderSettingsControls(stateRef);
   markUiDirty();

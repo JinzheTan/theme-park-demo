@@ -1,6 +1,7 @@
 import { SHORTCUT_TO_TOOL } from "../data/tools.js";
 import { setSelectedTool } from "../ui/tools-panel.js";
 import { setSimulationSpeed } from "../ui/speed-controls.js";
+import { performUndo, performRedo } from "../ui/build-controls.js";
 import { fitCameraToPark } from "../render/camera.js";
 import { toggleFullscreen } from "./fullscreen.js";
 
@@ -11,6 +12,17 @@ export function bindKeyboard(state, canvas) {
     const key = event.key.toLowerCase();
 
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+
+    if ((event.ctrlKey || event.metaKey) && key === "z" && !event.shiftKey) {
+      event.preventDefault();
+      performUndo();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && (key === "y" || (key === "z" && event.shiftKey))) {
+      event.preventDefault();
+      performRedo();
+      return;
+    }
 
     if (SHORTCUT_TO_TOOL[key]) {
       event.preventDefault();

@@ -1,0 +1,118 @@
+/* Dark mode. Re-points the design tokens to a deep teal/charcoal palette and
+ * darkens the handful of surfaces that hardcode light translucency. The canvas
+ * world art is untouched — only the glass HUD chrome changes. */
+
+body.theme-dark {
+  --bg-top: #16384f;
+  --bg-mid: #102838;
+  --bg-bottom: #081722;
+  --ink: #e6eff3;
+  --ink-strong: #f5fafb;
+  --muted: #9bb0bb;
+  --cream: #182a37;
+  --gold: #e6b450;
+  --gold-ink: #f1d091;
+  --coral: #f0906f;
+  --good: #4fd2ac;
+  --shadow: rgba(0, 0, 0, 0.45);
+  --shadow-strong: rgba(0, 0, 0, 0.6);
+
+  --glass-1-bg:
+    linear-gradient(150deg, rgba(70, 96, 114, 0.34), rgba(28, 44, 56, 0.16)),
+    rgba(18, 32, 42, 0.28);
+  --glass-1-border: rgba(255, 255, 255, 0.16);
+  --glass-1-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 8px 16px -10px rgba(255, 255, 255, 0.12),
+    0 12px 28px rgba(0, 0, 0, 0.42);
+
+  --glass-2-bg:
+    linear-gradient(150deg, rgba(74, 100, 120, 0.36), rgba(30, 46, 58, 0.18)),
+    rgba(20, 35, 46, 0.3);
+  --glass-2-border: rgba(255, 255, 255, 0.18);
+  --glass-2-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 9px 18px -11px rgba(255, 255, 255, 0.14),
+    0 18px 44px rgba(0, 0, 0, 0.5);
+
+  --glass-3-bg:
+    linear-gradient(155deg, rgba(60, 84, 102, 0.32), rgba(22, 36, 47, 0.14)),
+    rgba(16, 29, 39, 0.32);
+  --glass-3-border: rgba(255, 255, 255, 0.2);
+  --glass-3-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 11px 22px -13px rgba(255, 255, 255, 0.14),
+    0 26px 60px rgba(0, 0, 0, 0.56);
+
+  --accent-border: rgba(230, 180, 80, 0.6);
+  --accent-bg:
+    linear-gradient(145deg, rgba(230, 180, 80, 0.34), rgba(40, 60, 74, 0.42));
+  --accent-glow: 0 12px 22px rgba(0, 0, 0, 0.4);
+}
+
+/* Cooler page wash without the bright warm radials. */
+body.theme-dark {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(60, 110, 130, 0.5), transparent 32%),
+    radial-gradient(circle at 86% 10%, rgba(40, 70, 90, 0.4), transparent 30%),
+    linear-gradient(155deg, var(--bg-top), var(--bg-mid) 46%, var(--bg-bottom));
+}
+
+body.theme-dark::before {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.05), transparent 38%),
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: auto, 88px 88px, 88px 88px;
+}
+
+/* Surfaces that hardcode light translucency. */
+.theme-dark .settings-row,
+.theme-dark .settings-data-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .settings-switch {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.theme-dark .speed-controls,
+.theme-dark .build-controls {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .operation-meter,
+.theme-dark .guest-meter__track {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .achievement-card__icon {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-dark .guest-inspector__close {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.theme-dark .insight-item.warn,
+.theme-dark .operation-card.warn {
+  border-color: rgba(240, 144, 111, 0.45);
+  background: rgba(240, 144, 111, 0.16);
+}
+
+.theme-dark .insight-item.good,
+.theme-dark .operation-card.good {
+  border-color: rgba(79, 210, 172, 0.42);
+  background: rgba(79, 210, 172, 0.14);
+}
+
+.theme-dark .achievement-card.unlocked {
+  border-color: rgba(230, 180, 80, 0.45);
+  background: rgba(230, 180, 80, 0.15);
+}
+
+.theme-dark .topbar h1 {
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
